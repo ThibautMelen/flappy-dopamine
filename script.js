@@ -24,6 +24,7 @@ const THEMES = [
   {
     id: 'neon',
     name: 'Néon Pulse',
+    emoji: '⚡',
     particleSaturation: 90,
     particleLightness: 60,
     audioProfile: {
@@ -180,6 +181,7 @@ const THEMES = [
   },
   {
     id: 'dino',
+    emoji: '🦕',
     particleSaturation: 65,
     particleLightness: 55,
     particleHue(pulse, index) {
@@ -342,6 +344,7 @@ const THEMES = [
   {
     id: 'cyber',
     name: 'Cyber Rave',
+    emoji: '🤖',
     particleSaturation: 70,
     particleLightness: 55,
     audioProfile: {
@@ -569,6 +572,7 @@ const THEMES = [
   {
     id: 'forest',
     name: 'Forêt Luxuriante',
+    emoji: '🌿',
     particleSaturation: 70,
     particleLightness: 50,
     audioProfile: {
@@ -790,6 +794,7 @@ const THEMES = [
   {
     id: 'cosmic',
     name: 'Dérive Cosmique',
+    emoji: '🌌',
     particleSaturation: 80,
     particleLightness: 70,
     audioProfile: {
@@ -1605,7 +1610,9 @@ function updateThemeLabel(theme) {
     return;
   }
   const name = theme && (theme.name || theme.id) ? theme.name || theme.id : '';
-  themeLabel.textContent = name ? `Thème : ${name}` : '';
+  const emoji = theme && theme.emoji ? theme.emoji : '';
+  const decoratedName = name && emoji ? `${emoji} ${name}` : name;
+  themeLabel.textContent = decoratedName ? `Thème : ${decoratedName}` : '';
 }
 
 function syncThemeMetadata(force = false) {
