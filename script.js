@@ -3,6 +3,7 @@ const ctx = canvas.getContext('2d');
 const startBtn = document.getElementById('start');
 const scoreNode = document.getElementById('score');
 const bestNode = document.getElementById('best');
+const startMessage = document.getElementById('start-message');
 
 const DPR = window.devicePixelRatio || 1;
 let width = 640;
@@ -27,6 +28,7 @@ let loopHandle = 0;
 let score = 0;
 let bestScore = Number(localStorage.getItem('flappy-dopamine-best')) || 0;
 let pulse = 0;
+let messageTimeout = 0;
 
 const bird = {
   y: 0,
@@ -70,6 +72,7 @@ function startGame() {
   state = STATE_RUNNING;
   startBtn.textContent = 'Rejouer';
   resetGame();
+  triggerStartMessage();
 }
 
 function endGame() {
@@ -93,6 +96,42 @@ function flap() {
   if (state === STATE_GAMEOVER) {
     startGame();
   }
+}
+
+function triggerStartMessage() {
+  if (!startMessage) {
+    return;
+  }
+
+  startMessage.classList.remove('visible');
+  startMessage.querySelectorAll('.sparkle').forEach((node) => node.remove());
+
+  // Force reflow so the animation restarts even if the class was already applied.
+  startMessage.getBoundingClientRect();
+
+  const sparkleCount = 12;
+  for (let i = 0; i < sparkleCount; i += 1) {
+    const sparkle = document.createElement('span');
+    sparkle.className = 'sparkle';
+    sparkle.style.setProperty('--dx', `${(Math.random() - 0.5) * 220}px`);
+    sparkle.style.setProperty('--dy', `${(Math.random() - 0.5) * 160}px`);
+    sparkle.style.setProperty('--delay', `${Math.random() * 0.25}s`);
+    sparkle.style.setProperty('--hue', `${Math.floor(Math.random() * 240) + 40}`);
+    startMessage.appendChild(sparkle);
+    setTimeout(() => {
+      sparkle.remove();
+    }, 1200);
+  }
+
+  startMessage.classList.add('visible');
+
+  if (messageTimeout) {
+    clearTimeout(messageTimeout);
+  }
+  messageTimeout = setTimeout(() => {
+    startMessage.classList.remove('visible');
+    startMessage.querySelectorAll('.sparkle').forEach((node) => node.remove());
+  }, 1900);
 }
 
 function createBurst() {

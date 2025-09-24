@@ -112,6 +112,81 @@ button:hover {
   box-shadow: 0 1.6rem 3rem rgba(0, 255, 213, 0.35);
 }
 
+.sparkle-message {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.9);
+  padding: 0.75rem 2.2rem;
+  border-radius: 999px;
+  background: rgba(10, 10, 10, 0.6);
+  backdrop-filter: blur(18px);
+  font-size: clamp(1.4rem, 3vw, 2.2rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #fff;
+  text-shadow: 0 0 18px rgba(255, 255, 255, 0.65);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 20;
+  filter: drop-shadow(0 1.5rem 2.5rem rgba(0, 0, 0, 0.45));
+}
+
+.sparkle-message.visible {
+  animation: message-pop 1.9s ease-out forwards;
+}
+
+.sparkle-message .sparkle {
+  --dx: 0px;
+  --dy: 0px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: radial-gradient(circle, hsla(var(--hue, 60), 100%, 82%, 1) 0%,
+      hsla(var(--hue, 60), 100%, 60%, 0.6) 55%, transparent 75%);
+  mix-blend-mode: screen;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.4);
+  animation: sparkle-pop 1s ease-out forwards;
+  animation-delay: var(--delay, 0s);
+}
+
+@keyframes message-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.85);
+  }
+  15% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.02);
+  }
+  70% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+}
+
+@keyframes sparkle-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.4);
+  }
+  35% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0);
+  }
+}
+
 .hint {
   font-size: 0.85rem;
   opacity: 0.65;
