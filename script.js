@@ -28,6 +28,55 @@ let score = 0;
 let bestScore = Number(localStorage.getItem('flappy-dopamine-best')) || 0;
 let pulse = 0;
 
+const theme = {
+  currentHue: Math.random() * 360,
+  startHue: 0,
+  endHue: 0,
+  progress: 0,
+  duration: 8,
+};
+
+function wrapHue(value) {
+  return ((value % 360) + 360) % 360;
+}
+
+function lerpHue(a, b, t) {
+  const delta = ((b - a + 540) % 360) - 180;
+  return wrapHue(a + delta * t);
+}
+
+function easeInOut(t) {
+  return t * t * (3 - 2 * t);
+}
+
+function scheduleNextTheme(initial = false) {
+  theme.startHue = theme.currentHue;
+  const direction = initial ? 1 : (Math.random() > 0.5 ? 1 : -1);
+  const shift = initial ? 90 : 70 + Math.random() * 150;
+  theme.endHue = wrapHue(theme.currentHue + direction * shift);
+  theme.progress = initial ? Math.random() * 0.5 : 0;
+  theme.duration = 6.5 + Math.random() * 5.5;
+}
+
+function updateTheme(delta) {
+  if (theme.duration <= 0) {
+    theme.duration = 1;
+  }
+  theme.progress = Math.min(theme.progress + delta / theme.duration, 1);
+  const eased = easeInOut(theme.progress);
+  theme.currentHue = lerpHue(theme.startHue, theme.endHue, eased);
+  if (theme.progress >= 1) {
+    scheduleNextTheme();
+  }
+}
+
+function getThemeHue(offset = 0) {
+  return wrapHue(theme.currentHue + offset);
+}
+
+scheduleNextTheme(true);
+updateTheme(0);
+
 const bird = {
   y: 0,
   velocity: 0,
@@ -104,7 +153,7 @@ function createBurst() {
       vy: Math.random() * -200 - 120,
       life: Math.random() * 0.4 + 0.3,
       radius: Math.random() * 6 + 4,
-      hue: (pulse * 60 + i * 45) % 360,
+      hue: getThemeHue(Math.sin(pulse * 2 + i) * 18 + i * 14),
     });
   }
 }
@@ -117,11 +166,12 @@ function spawnPipe() {
     top: gapCenter - PIPE_GAP / 2,
     bottom: gapCenter + PIPE_GAP / 2,
     passed: false,
-    hue: (pulse * 50 + Math.random() * 60) % 360,
+    hue: getThemeHue(Math.random() * 60 - 30 + Math.sin(pulse * 0.8) * 20),
   });
 }
 
 function update(delta) {
+  updateTheme(delta);
   pulse += delta;
   spawnTimer += delta;
 
@@ -187,9 +237,12 @@ function drawBackground() {
   const h = height;
 
   const gradient = ctx.createLinearGradient(0, 0, w, h);
-  gradient.addColorStop(0, `hsl(${(time * 60) % 360}, 85%, 55%)`);
-  gradient.addColorStop(0.5, `hsl(${(time * 90 + 120) % 360}, 80%, 45%)`);
-  gradient.addColorStop(1, `hsl(${(time * 120 + 240) % 360}, 90%, 35%)`);
+  const topHue = getThemeHue(Math.sin(pulse * 0.35) * 12);
+  const midHue = getThemeHue(90 + Math.cos(pulse * 0.28) * 18);
+  const bottomHue = getThemeHue(180 + Math.sin(pulse * 0.32) * 22);
+  gradient.addColorStop(0, `hsl(${topHue}, 85%, 55%)`);
+  gradient.addColorStop(0.5, `hsl(${midHue}, 80%, 45%)`);
+  gradient.addColorStop(1, `hsl(${bottomHue}, 90%, 35%)`);
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, w, h);
 
@@ -200,7 +253,7 @@ function drawBackground() {
     const frequency = 0.006 + i * 0.002;
     const speed = 0.6 + i * 0.25;
     const offset = Math.sin(time * speed + i * 0.8) * 100;
-    const hue = (time * 80 + i * 60) % 360;
+    const hue = getThemeHue(i * 26 + Math.sin(pulse * 0.9 + i) * 22);
     ctx.strokeStyle = `hsla(${hue}, 90%, 65%, ${0.08 + i * 0.06})`;
     ctx.lineWidth = 8;
 
@@ -243,22 +296,25 @@ function drawBird() {
   ctx.rotate(bird.rotation);
 
   const bodyRadius = 24;
-  const hue = (pulse * 120) % 360;
+  const hue = getThemeHue(Math.sin(pulse * 1.2) * 18);
+  const wingHue = getThemeHue(200 + Math.cos(pulse * 0.9) * 12);
+  const beakHue = getThemeHue(40 + Math.sin(pulse * 1.4) * 10);
+  const highlightHue = getThemeHue(120 + Math.sin(pulse * 0.6) * 10);
   const radial = ctx.createRadialGradient(0, -8, 6, 0, 0, bodyRadius);
   radial.addColorStop(0, `hsla(${hue}, 90%, 75%, 0.95)`);
-  radial.addColorStop(1, `hsla(${(hue + 120) % 360}, 85%, 50%, 0.95)`);
+  radial.addColorStop(1, `hsla(${highlightHue}, 85%, 50%, 0.95)`);
 
   ctx.fillStyle = radial;
   ctx.beginPath();
   ctx.ellipse(0, 0, bodyRadius, bodyRadius * 0.82, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.fillStyle = `hsla(${(hue + 200) % 360}, 80%, 65%, 0.85)`;
+  ctx.fillStyle = `hsla(${wingHue}, 80%, 65%, 0.85)`;
   ctx.beginPath();
   ctx.ellipse(-bodyRadius * 0.4, -10, bodyRadius * 0.8, bodyRadius * 0.5, 0.6, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.fillStyle = `hsla(${(hue + 40) % 360}, 90%, 65%, 0.9)`;
+  ctx.fillStyle = `hsla(${beakHue}, 90%, 65%, 0.9)`;
   ctx.beginPath();
   ctx.moveTo(bodyRadius * 0.8, -6);
   ctx.quadraticCurveTo(bodyRadius * 1.4, 0, bodyRadius * 0.8, 8);
