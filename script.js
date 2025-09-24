@@ -1743,6 +1743,7 @@ function getThemeHue(offset = 0) {
 
 scheduleNextTheme(true);
 updateTheme(0);
+syncThemeMetadata(true);
 
 const STATE_IDLE = 'idle';
 const STATE_RUNNING = 'running';
@@ -1758,6 +1759,7 @@ let score = 0;
 let bestScore = Number(localStorage.getItem('flappy-dopamine-best')) || 0;
 let pulse = 0;
 let messageTimeout = 0;
+let activeThemeId = null;
 
 const AudioContextClass = window.AudioContext || window.webkitAudioContext;
 const audio = {
@@ -1861,7 +1863,6 @@ const DEFAULT_AUDIO_PROFILE = {
 };
 
 syncThemeMetadata(true);
-
 function cloneVoiceConfig(voice) {
   if (!voice) {
     return {};
@@ -2401,11 +2402,13 @@ if (typeof desktopLeaderboardMedia.addEventListener === 'function') {
 } else if (typeof desktopLeaderboardMedia.addListener === 'function') {
   desktopLeaderboardMedia.addListener(() => syncLeaderboardForViewport());
 }
-
 function updateThemeLabel(theme) {
   if (!themeLabel) {
     return;
   }
+  const name = theme && (theme.name || theme.id) ? theme.name || theme.id : '';
+  themeLabel.textContent = name ? `Thème : ${name}` : '';
+}
 
 function syncThemeMetadata(force = false) {
   const theme = getCurrentTheme();
