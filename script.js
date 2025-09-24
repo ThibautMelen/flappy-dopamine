@@ -849,55 +849,6 @@ function playGameOverSfx() {
   noise.stop(now + 0.6);
 }
 
-const theme = {
-  currentHue: Math.random() * 360,
-  startHue: 0,
-  endHue: 0,
-  progress: 0,
-  duration: 8,
-};
-
-function wrapHue(value) {
-  return ((value % 360) + 360) % 360;
-}
-
-function lerpHue(a, b, t) {
-  const delta = ((b - a + 540) % 360) - 180;
-  return wrapHue(a + delta * t);
-}
-
-function easeInOut(t) {
-  return t * t * (3 - 2 * t);
-}
-
-function scheduleNextTheme(initial = false) {
-  theme.startHue = theme.currentHue;
-  const direction = initial ? 1 : (Math.random() > 0.5 ? 1 : -1);
-  const shift = initial ? 90 : 70 + Math.random() * 150;
-  theme.endHue = wrapHue(theme.currentHue + direction * shift);
-  theme.progress = initial ? Math.random() * 0.5 : 0;
-  theme.duration = 6.5 + Math.random() * 5.5;
-}
-
-function updateTheme(delta) {
-  if (theme.duration <= 0) {
-    theme.duration = 1;
-  }
-  theme.progress = Math.min(theme.progress + delta / theme.duration, 1);
-  const eased = easeInOut(theme.progress);
-  theme.currentHue = lerpHue(theme.startHue, theme.endHue, eased);
-  if (theme.progress >= 1) {
-    scheduleNextTheme();
-  }
-}
-
-function getThemeHue(offset = 0) {
-  return wrapHue(theme.currentHue + offset);
-}
-
-scheduleNextTheme(true);
-updateTheme(0);
-
 const bird = {
   y: 0,
   velocity: 0,
