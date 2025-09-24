@@ -77,6 +77,13 @@ h1 {
   gap: 0.8rem 1.2rem;
 }
 
+.info p {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1.25rem;
+}
+
 .tag {
   display: block;
   font-size: 0.75rem;
@@ -137,6 +144,84 @@ button:hover {
   opacity: 0.65;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+body.booting {
+  perspective: 1600px;
+}
+
+.camera-boot {
+  transform-style: preserve-3d;
+  transform-origin: center center;
+  animation: cameraDollyZoom 1.8s cubic-bezier(0.7, 0, 0.2, 1) forwards;
+  pointer-events: none;
+  will-change: transform, filter;
+}
+
+body.booting .ui {
+  transform-origin: center;
+  animation: cameraSubjectLock 1.8s cubic-bezier(0.83, 0, 0.17, 1) forwards;
+}
+
+body.booting canvas {
+  transform-origin: center;
+  animation: cameraStageBloom 1.8s ease-out forwards;
+  will-change: transform, filter;
+}
+
+@keyframes cameraDollyZoom {
+  0% {
+    transform: translateZ(-540px) scale(1.55) rotateX(2deg);
+    filter: blur(8px) brightness(0.7) saturate(0.75);
+  }
+  55% {
+    transform: translateZ(-220px) scale(1.22) rotateX(1deg);
+    filter: blur(3px) brightness(1.05) saturate(1.1);
+  }
+  100% {
+    transform: translateZ(0) scale(1) rotateX(0deg);
+    filter: blur(0) brightness(1) saturate(1);
+  }
+}
+
+@keyframes cameraSubjectLock {
+  0% {
+    transform: translateZ(220px) scale(0.72);
+    opacity: 0;
+  }
+  40% {
+    opacity: 0.35;
+  }
+  100% {
+    transform: translateZ(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes cameraStageBloom {
+  0% {
+    transform: scale(1.05);
+    filter: blur(5px) saturate(1.4);
+  }
+  50% {
+    transform: scale(0.98);
+    filter: blur(2px) saturate(1.1);
+  }
+  100% {
+    transform: scale(1);
+    filter: blur(0) saturate(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.booting,
+  .camera-boot,
+  body.booting .ui,
+  body.booting canvas {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 @media (max-width: 960px) {
