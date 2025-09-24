@@ -86,6 +86,16 @@ h1 {
   margin-bottom: 0.35rem;
 }
 
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.actions button {
+  width: 100%;
+}
+
 #score,
 #best {
   font-size: 2.2rem;
@@ -110,6 +120,16 @@ button {
 button:hover {
   transform: translateY(-2px) scale(1.02);
   box-shadow: 0 1.6rem 3rem rgba(0, 255, 213, 0.35);
+}
+
+#share {
+  display: none;
+  background: linear-gradient(135deg, var(--secondary), var(--accent));
+  box-shadow: 0 0.75rem 1.5rem rgba(0, 255, 213, 0.25);
+}
+
+#share:hover {
+  box-shadow: 0 1.6rem 3rem rgba(255, 213, 0, 0.35);
 }
 
 .hint {

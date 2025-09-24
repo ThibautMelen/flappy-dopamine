@@ -1,6 +1,7 @@
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 const startBtn = document.getElementById('start');
+const shareBtn = document.getElementById('share');
 const scoreNode = document.getElementById('score');
 const bestNode = document.getElementById('best');
 
@@ -39,6 +40,14 @@ const particles = [];
 
 bestNode.textContent = bestScore;
 
+function hideShareButton() {
+  shareBtn.style.display = 'none';
+}
+
+function showShareButton() {
+  shareBtn.style.display = 'block';
+}
+
 function resize() {
   const cssWidth = canvas.clientWidth || 640;
   const cssHeight = canvas.clientHeight || 480;
@@ -64,6 +73,7 @@ function resetGame() {
   bird.rotation = 0;
   spawnTimer = 0;
   pulse = 0;
+  hideShareButton();
 }
 
 function startGame() {
@@ -80,6 +90,7 @@ function endGame() {
     bestNode.textContent = bestScore;
     localStorage.setItem('flappy-dopamine-best', bestScore);
   }
+  showShareButton();
 }
 
 function flap() {
@@ -348,6 +359,21 @@ document.addEventListener('keydown', (event) => {
 canvas.addEventListener('pointerdown', handlePress);
 canvas.addEventListener('touchstart', handlePress, { passive: false });
 startBtn.addEventListener('click', handlePress);
+
+shareBtn.addEventListener('click', () => {
+  if (state !== STATE_GAMEOVER) {
+    return;
+  }
+  const pointsLabel = score > 1 ? 'points' : 'point';
+  const tweetText = `Je viens de marquer ${score} ${pointsLabel} sur Flappy Dopamine ! Viens planer avec moi ✨`;
+  const tweetUrl = new URL('https://twitter.com/intent/tweet');
+  tweetUrl.searchParams.set('text', tweetText);
+  tweetUrl.searchParams.set('hashtags', 'FlappyDopamine');
+  if (window.location.protocol.startsWith('http')) {
+    tweetUrl.searchParams.set('url', window.location.href);
+  }
+  window.open(tweetUrl.toString(), '_blank', 'noopener');
+});
 
 resize();
 resetGame();
