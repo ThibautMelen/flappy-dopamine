@@ -112,6 +112,167 @@ const THEMES = [
     },
   },
   {
+    id: 'dino',
+    particleSaturation: 65,
+    particleLightness: 55,
+    particleHue(pulse, index) {
+      return (40 + Math.sin(pulse * 3 + index) * 20 + index * 12) % 360;
+    },
+    drawBackground(ctx, pulse, w, h) {
+      ctx.save();
+      const sky = ctx.createLinearGradient(0, 0, 0, h);
+      sky.addColorStop(0, '#f7d79a');
+      sky.addColorStop(0.5, '#f0a86f');
+      sky.addColorStop(1, '#5b3f2b');
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, w, h);
+
+      const sunY = h * 0.25 + Math.sin(pulse * 0.6) * 12;
+      const sunGradient = ctx.createRadialGradient(w * 0.65, sunY, 10, w * 0.65, sunY, 160);
+      sunGradient.addColorStop(0, 'rgba(255, 240, 200, 0.9)');
+      sunGradient.addColorStop(1, 'rgba(255, 240, 200, 0)');
+      ctx.fillStyle = sunGradient;
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.fillStyle = 'rgba(120, 60, 30, 0.6)';
+      ctx.beginPath();
+      ctx.moveTo(-160, h * 0.7);
+      for (let x = -160; x <= w + 160; x += 80) {
+        const y = h * 0.7 + Math.sin(pulse * 0.5 + x * 0.01) * 18 + (x % 160 === 0 ? -40 : 0);
+        ctx.lineTo(x, y);
+      }
+      ctx.lineTo(w + 160, h);
+      ctx.lineTo(-160, h);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = 'rgba(70, 35, 18, 0.8)';
+      ctx.beginPath();
+      ctx.moveTo(w * 0.2, h * 0.68);
+      ctx.lineTo(w * 0.32, h * 0.42);
+      ctx.lineTo(w * 0.44, h * 0.68);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = 'rgba(210, 120, 60, 0.25)';
+      for (let i = 0; i < 16; i += 1) {
+        const plumeX = w * 0.32 + Math.sin(pulse * 1.4 + i) * 18;
+        const plumeY = h * 0.42 - i * 14 - Math.cos(pulse * 0.8 + i) * 6;
+        ctx.beginPath();
+        ctx.ellipse(plumeX, plumeY, 20 - i, 14 - i * 0.5, pulse * 0.2 + i * 0.3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.fillStyle = 'rgba(40, 80, 45, 0.65)';
+      for (let i = 0; i < 12; i += 1) {
+        const baseX = (i * 140 + Math.sin(pulse * 2 + i) * 40 + w) % (w + 120) - 60;
+        const baseY = h * 0.82 + Math.sin(pulse * 1.2 + i) * 6;
+        ctx.beginPath();
+        ctx.moveTo(baseX, baseY);
+        ctx.lineTo(baseX + 18, baseY - 50);
+        ctx.lineTo(baseX + 36, baseY);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      ctx.restore();
+    },
+    drawPipe(ctx, pipe, h, pulse) {
+      ctx.save();
+      const stoneGradient = ctx.createLinearGradient(pipe.x, 0, pipe.x, pipe.bottom);
+      stoneGradient.addColorStop(0, 'rgba(110, 84, 60, 0.95)');
+      stoneGradient.addColorStop(0.6, 'rgba(90, 68, 48, 0.95)');
+      stoneGradient.addColorStop(1, 'rgba(70, 52, 38, 0.95)');
+      ctx.fillStyle = stoneGradient;
+      ctx.fillRect(pipe.x, 0, PIPE_WIDTH, pipe.top);
+      ctx.fillRect(pipe.x, pipe.bottom, PIPE_WIDTH, h - pipe.bottom);
+
+      ctx.strokeStyle = 'rgba(255, 235, 200, 0.2)';
+      ctx.lineWidth = 3;
+      for (let y = 16; y < pipe.top - 12; y += 30) {
+        ctx.beginPath();
+        ctx.moveTo(pipe.x + 10, y);
+        ctx.lineTo(pipe.x + PIPE_WIDTH - 10, y - 6);
+        ctx.stroke();
+      }
+      for (let y = pipe.bottom + 12; y < h - 12; y += 30) {
+        ctx.beginPath();
+        ctx.moveTo(pipe.x + 10, y);
+        ctx.lineTo(pipe.x + PIPE_WIDTH - 10, y + 6);
+        ctx.stroke();
+      }
+
+      ctx.strokeStyle = 'rgba(50, 35, 25, 0.8)';
+      ctx.lineWidth = 6;
+      ctx.strokeRect(pipe.x + 3, 0, PIPE_WIDTH - 6, pipe.top);
+      ctx.strokeRect(pipe.x + 3, pipe.bottom, PIPE_WIDTH - 6, h - pipe.bottom);
+
+      ctx.fillStyle = 'rgba(120, 150, 70, 0.75)';
+      ctx.beginPath();
+      const vineWave = Math.sin(pulse * 2.5 + pipe.seed * Math.PI * 2) * 10;
+      ctx.moveTo(pipe.x + PIPE_WIDTH / 2 + vineWave, pipe.top);
+      ctx.bezierCurveTo(
+        pipe.x + PIPE_WIDTH / 2 - 24,
+        pipe.top + 80,
+        pipe.x + PIPE_WIDTH / 2 + 24,
+        pipe.bottom - 80,
+        pipe.x + PIPE_WIDTH / 2 - vineWave,
+        pipe.bottom
+      );
+      ctx.lineTo(pipe.x + PIPE_WIDTH / 2 - vineWave + 8, pipe.bottom + 18);
+      ctx.lineTo(pipe.x + PIPE_WIDTH / 2 + vineWave + 12, pipe.bottom);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.restore();
+    },
+    drawBird(ctx, pulse) {
+      ctx.save();
+      const wingFlap = Math.sin(pulse * 7) * 18;
+      ctx.fillStyle = 'rgba(200, 150, 80, 0.9)';
+      ctx.beginPath();
+      ctx.moveTo(-30, 0);
+      ctx.quadraticCurveTo(-50, -wingFlap - 6, -12, -4);
+      ctx.quadraticCurveTo(-50, wingFlap + 6, -30, 4);
+      ctx.closePath();
+      ctx.fill();
+
+      const bodyGradient = ctx.createLinearGradient(-10, -20, 26, 20);
+      bodyGradient.addColorStop(0, 'rgba(230, 190, 120, 0.95)');
+      bodyGradient.addColorStop(1, 'rgba(150, 100, 60, 0.95)');
+      ctx.fillStyle = bodyGradient;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 26, 18, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = 'rgba(240, 220, 180, 0.95)';
+      ctx.beginPath();
+      ctx.arc(16, -4, 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(30, 25, 20, 0.95)';
+      ctx.beginPath();
+      ctx.arc(18, -4, 3, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = 'rgba(220, 140, 60, 0.9)';
+      ctx.beginPath();
+      ctx.moveTo(26, -2);
+      ctx.lineTo(38, 0);
+      ctx.lineTo(26, 2);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = 'rgba(90, 60, 35, 0.85)';
+      ctx.beginPath();
+      ctx.moveTo(-6, 6);
+      ctx.lineTo(-2, 18);
+      ctx.lineTo(2, 6);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    },
+  },
+  {
     id: 'cyber',
     particleSaturation: 70,
     particleLightness: 55,
