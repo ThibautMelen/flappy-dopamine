@@ -6,6 +6,7 @@
   --secondary: #00ffd5;
   --accent: #ffd500;
   --bg: #050505;
+  --theme-hue: 210;
 }
 
 * {
@@ -146,7 +147,7 @@ button:hover {
   transform: translate(-50%, -50%) scale(0.9);
   padding: 0.75rem 2.2rem;
   border-radius: 999px;
-  background: rgba(10, 10, 10, 0.6);
+  background: linear-gradient(135deg, hsla(var(--theme-hue, 210), 100%, 60%, 0.28), rgba(10, 10, 10, 0.65));
   backdrop-filter: blur(18px);
   font-size: clamp(1.4rem, 3vw, 2.2rem);
   font-weight: 700;
@@ -157,6 +158,8 @@ button:hover {
   pointer-events: none;
   z-index: 20;
   filter: drop-shadow(0 1.5rem 2.5rem rgba(0, 0, 0, 0.45));
+  border: 1px solid hsla(var(--theme-hue, 210), 85%, 68%, 0.45);
+  box-shadow: 0 0 28px hsla(var(--theme-hue, 210), 95%, 60%, 0.28);
 }
 
 .sparkle-message.visible {

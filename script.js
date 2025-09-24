@@ -535,6 +535,74 @@ const THEMES = [
   },
 ];
 
+const dynamicTheme = {
+  currentHue: Math.random() * 360,
+  startHue: 0,
+  endHue: 0,
+  progress: 0,
+  duration: 8,
+};
+
+let lastAppliedHue = null;
+
+function wrapHue(value) {
+  return ((value % 360) + 360) % 360;
+}
+
+function lerpHue(a, b, t) {
+  const delta = ((b - a + 540) % 360) - 180;
+  return wrapHue(a + delta * t);
+}
+
+function easeInOut(t) {
+  return t * t * (3 - 2 * t);
+}
+
+function scheduleNextTheme(initial = false) {
+  dynamicTheme.startHue = dynamicTheme.currentHue;
+  const direction = initial ? 1 : Math.random() > 0.5 ? 1 : -1;
+  const shift = initial ? 90 : 70 + Math.random() * 150;
+  dynamicTheme.endHue = wrapHue(dynamicTheme.currentHue + direction * shift);
+  dynamicTheme.progress = initial ? Math.random() * 0.5 : 0;
+  dynamicTheme.duration = 6.5 + Math.random() * 5.5;
+}
+
+function applyGlobalHue() {
+  const hue = dynamicTheme.currentHue;
+  if (lastAppliedHue !== null && Math.abs(lastAppliedHue - hue) < 0.5) {
+    return;
+  }
+  lastAppliedHue = hue;
+  const root = document.documentElement;
+  root.style.setProperty('--theme-hue', hue.toFixed(1));
+  const body = document.body;
+  const primaryHue = wrapHue(hue - 30);
+  const secondaryHue = wrapHue(hue + 18);
+  body.style.background = `radial-gradient(circle at 12% 18%, hsla(${primaryHue}, 85%, 28%, 0.45), transparent 52%), ` +
+    `radial-gradient(circle at 86% 78%, hsla(${secondaryHue}, 80%, 30%, 0.4), transparent 55%), ` +
+    `radial-gradient(circle at 45% 62%, hsla(${wrapHue(hue + 140)}, 82%, 32%, 0.35), transparent 58%), var(--bg)`;
+}
+
+function updateTheme(delta) {
+  if (dynamicTheme.duration <= 0) {
+    dynamicTheme.duration = 1;
+  }
+  dynamicTheme.progress = Math.min(dynamicTheme.progress + delta / dynamicTheme.duration, 1);
+  const eased = easeInOut(dynamicTheme.progress);
+  dynamicTheme.currentHue = lerpHue(dynamicTheme.startHue, dynamicTheme.endHue, eased);
+  if (dynamicTheme.progress >= 1) {
+    scheduleNextTheme();
+  }
+  applyGlobalHue();
+}
+
+function getThemeHue(offset = 0) {
+  return wrapHue(dynamicTheme.currentHue + offset);
+}
+
+scheduleNextTheme(true);
+updateTheme(0);
+
 const STATE_IDLE = 'idle';
 const STATE_RUNNING = 'running';
 const STATE_GAMEOVER = 'gameover';
@@ -781,6 +849,55 @@ function playGameOverSfx() {
   noise.stop(now + 0.6);
 }
 
+const theme = {
+  currentHue: Math.random() * 360,
+  startHue: 0,
+  endHue: 0,
+  progress: 0,
+  duration: 8,
+};
+
+function wrapHue(value) {
+  return ((value % 360) + 360) % 360;
+}
+
+function lerpHue(a, b, t) {
+  const delta = ((b - a + 540) % 360) - 180;
+  return wrapHue(a + delta * t);
+}
+
+function easeInOut(t) {
+  return t * t * (3 - 2 * t);
+}
+
+function scheduleNextTheme(initial = false) {
+  theme.startHue = theme.currentHue;
+  const direction = initial ? 1 : (Math.random() > 0.5 ? 1 : -1);
+  const shift = initial ? 90 : 70 + Math.random() * 150;
+  theme.endHue = wrapHue(theme.currentHue + direction * shift);
+  theme.progress = initial ? Math.random() * 0.5 : 0;
+  theme.duration = 6.5 + Math.random() * 5.5;
+}
+
+function updateTheme(delta) {
+  if (theme.duration <= 0) {
+    theme.duration = 1;
+  }
+  theme.progress = Math.min(theme.progress + delta / theme.duration, 1);
+  const eased = easeInOut(theme.progress);
+  theme.currentHue = lerpHue(theme.startHue, theme.endHue, eased);
+  if (theme.progress >= 1) {
+    scheduleNextTheme();
+  }
+}
+
+function getThemeHue(offset = 0) {
+  return wrapHue(theme.currentHue + offset);
+}
+
+scheduleNextTheme(true);
+updateTheme(0);
+
 const bird = {
   y: 0,
   velocity: 0,
@@ -925,7 +1042,8 @@ function triggerStartMessage() {
 function createBurst() {
   const theme = getCurrentTheme();
   for (let i = 0; i < 8; i += 1) {
-    const hue = theme && theme.particleHue ? theme.particleHue(pulse, i) : (pulse * 60 + i * 45) % 360;
+    const fallbackHue = getThemeHue(Math.sin(pulse * 2 + i) * 18 + i * 14);
+    const hue = theme && theme.particleHue ? theme.particleHue(pulse, i) : fallbackHue;
     const saturation = theme && theme.particleSaturation !== undefined ? theme.particleSaturation : 90;
     const lightness = theme && theme.particleLightness !== undefined ? theme.particleLightness : 60;
     particles.push({
@@ -951,10 +1069,12 @@ function spawnPipe() {
     bottom: gapCenter + PIPE_GAP / 2,
     passed: false,
     seed: Math.random(),
+    hue: getThemeHue(Math.random() * 60 - 30 + Math.sin(pulse * 0.8) * 20),
   });
 }
 
 function update(delta) {
+  updateTheme(delta);
   pulse += delta;
   spawnTimer += delta;
 
@@ -1018,39 +1138,155 @@ function update(delta) {
 
 function drawBackground() {
   const theme = getCurrentTheme();
+  let usedCustom = false;
   if (theme && typeof theme.drawBackground === 'function') {
     theme.drawBackground(ctx, pulse, width, height);
+    usedCustom = true;
   } else if (THEMES[0] && typeof THEMES[0].drawBackground === 'function') {
     THEMES[0].drawBackground(ctx, pulse, width, height);
+    usedCustom = true;
+  } else {
+    drawDynamicBackgroundLayer(ctx, pulse, width, height, 1);
+    return;
   }
+  drawDynamicBackgroundLayer(ctx, pulse, width, height, usedCustom ? 0.2 : 1);
+}
+
+function drawDynamicBackgroundLayer(context, currentPulse, w, h, alpha = 1) {
+  context.save();
+  context.globalAlpha = alpha;
+  const time = currentPulse * 0.8;
+  const gradient = context.createLinearGradient(0, 0, w, h);
+  const topHue = getThemeHue(Math.sin(currentPulse * 0.35) * 12);
+  const midHue = getThemeHue(90 + Math.cos(currentPulse * 0.28) * 18);
+  const bottomHue = getThemeHue(180 + Math.sin(currentPulse * 0.32) * 22);
+  gradient.addColorStop(0, `hsl(${topHue}, 85%, 55%)`);
+  gradient.addColorStop(0.5, `hsl(${midHue}, 80%, 45%)`);
+  gradient.addColorStop(1, `hsl(${bottomHue}, 90%, 35%)`);
+  context.fillStyle = gradient;
+  context.fillRect(0, 0, w, h);
+
+  const layers = 6;
+  for (let i = 0; i < layers; i += 1) {
+    context.beginPath();
+    const amplitude = 40 + i * 14;
+    const frequency = 0.006 + i * 0.002;
+    const speed = 0.6 + i * 0.25;
+    const offset = Math.sin(time * speed + i * 0.8) * 100;
+    const hue = getThemeHue(i * 26 + Math.sin(currentPulse * 0.9 + i) * 22);
+    context.strokeStyle = `hsla(${hue}, 90%, 65%, ${0.08 + i * 0.06})`;
+    context.lineWidth = 8;
+
+    context.moveTo(-100, h / 2);
+    for (let x = -100; x <= w + 100; x += 18) {
+      const y = h / 2 + Math.sin(x * frequency + time * speed) * amplitude + offset;
+      context.lineTo(x, y);
+    }
+    context.stroke();
+  }
+  context.restore();
 }
 
 function drawPipes() {
   const theme = getCurrentTheme();
   ctx.save();
   for (const pipe of pipes) {
+    let drawn = false;
     if (theme && typeof theme.drawPipe === 'function') {
       theme.drawPipe(ctx, pipe, height, pulse);
+      drawn = true;
     } else if (THEMES[0] && typeof THEMES[0].drawPipe === 'function') {
       THEMES[0].drawPipe(ctx, pipe, height, pulse);
+      drawn = true;
+    }
+    if (!drawn) {
+      drawDynamicPipe(ctx, pipe, height, 1);
+    } else {
+      drawDynamicPipe(ctx, pipe, height, 0.22);
     }
   }
   ctx.restore();
+}
+
+function drawDynamicPipe(context, pipe, h, alpha = 1) {
+  context.save();
+  context.globalAlpha = alpha;
+  const baseHue = pipe.hue !== undefined ? pipe.hue : getThemeHue();
+  const topGradient = context.createLinearGradient(pipe.x, 0, pipe.x + PIPE_WIDTH, pipe.top);
+  topGradient.addColorStop(0, `hsla(${baseHue}, 80%, 70%, 0.95)`);
+  topGradient.addColorStop(1, `hsla(${wrapHue(baseHue + 60)}, 80%, 40%, 0.95)`);
+  context.fillStyle = topGradient;
+  context.fillRect(pipe.x, 0, PIPE_WIDTH, pipe.top);
+
+  const bottomGradient = context.createLinearGradient(pipe.x, pipe.bottom, pipe.x + PIPE_WIDTH, h);
+  bottomGradient.addColorStop(0, `hsla(${wrapHue(baseHue + 60)}, 90%, 50%, 0.95)`);
+  bottomGradient.addColorStop(1, `hsla(${wrapHue(baseHue + 180)}, 90%, 35%, 0.95)`);
+  context.fillStyle = bottomGradient;
+  context.fillRect(pipe.x, pipe.bottom, PIPE_WIDTH, h - pipe.bottom);
+
+  context.fillStyle = `hsla(${baseHue}, 90%, 65%, 0.2)`;
+  context.fillRect(pipe.x - 12, 0, 12, h);
+
+  context.restore();
 }
 
 function drawBird() {
   ctx.save();
   ctx.translate(BIRD_X, bird.y);
   ctx.rotate(bird.rotation);
-
   const theme = getCurrentTheme();
+  let drawn = false;
   if (theme && typeof theme.drawBird === 'function') {
     theme.drawBird(ctx, pulse);
+    drawn = true;
   } else if (THEMES[0] && typeof THEMES[0].drawBird === 'function') {
     THEMES[0].drawBird(ctx, pulse);
+    drawn = true;
   }
+  drawDynamicBird(ctx, pulse, drawn ? 0.28 : 1);
 
   ctx.restore();
+}
+
+function drawDynamicBird(context, currentPulse, alpha = 1) {
+  context.save();
+  context.globalAlpha = alpha;
+  const bodyRadius = 24;
+  const hue = getThemeHue(Math.sin(currentPulse * 1.2) * 18);
+  const wingHue = getThemeHue(200 + Math.cos(currentPulse * 0.9) * 12);
+  const beakHue = getThemeHue(40 + Math.sin(currentPulse * 1.4) * 10);
+  const highlightHue = getThemeHue(120 + Math.sin(currentPulse * 0.6) * 10);
+  const radial = context.createRadialGradient(0, -8, 6, 0, 0, bodyRadius);
+  radial.addColorStop(0, `hsla(${hue}, 90%, 75%, 0.95)`);
+  radial.addColorStop(1, `hsla(${highlightHue}, 85%, 50%, 0.95)`);
+
+  context.fillStyle = radial;
+  context.beginPath();
+  context.ellipse(0, 0, bodyRadius, bodyRadius * 0.82, 0, 0, Math.PI * 2);
+  context.fill();
+
+  context.fillStyle = `hsla(${wingHue}, 80%, 65%, 0.85)`;
+  context.beginPath();
+  context.ellipse(-bodyRadius * 0.4, -10, bodyRadius * 0.8, bodyRadius * 0.5, 0.6, 0, Math.PI * 2);
+  context.fill();
+
+  context.fillStyle = `hsla(${beakHue}, 90%, 65%, 0.9)`;
+  context.beginPath();
+  context.moveTo(bodyRadius * 0.8, -6);
+  context.quadraticCurveTo(bodyRadius * 1.4, 0, bodyRadius * 0.8, 8);
+  context.quadraticCurveTo(bodyRadius * 0.9, 0, bodyRadius * 0.8, -6);
+  context.fill();
+
+  context.fillStyle = 'rgba(255, 255, 255, 0.85)';
+  context.beginPath();
+  context.arc(bodyRadius * 0.2, -10, 8, 0, Math.PI * 2);
+  context.fill();
+  context.fillStyle = 'rgba(30, 30, 30, 0.9)';
+  context.beginPath();
+  context.arc(bodyRadius * 0.5, -10, 3, 0, Math.PI * 2);
+  context.fill();
+
+  context.restore();
 }
 
 function drawParticles() {
