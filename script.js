@@ -6,6 +6,7 @@ const scoreNode = document.getElementById('score');
 const bestNode = document.getElementById('best');
 const wrapper = document.querySelector('.wrapper');
 const startMessage = document.getElementById('start-message');
+const themeLabel = document.getElementById('theme-label');
 
 const DPR = window.devicePixelRatio || 1;
 let width = 640;
@@ -22,8 +23,74 @@ const MAX_DROP_SPEED = 900;
 const THEMES = [
   {
     id: 'neon',
+    name: 'Néon Pulse',
     particleSaturation: 90,
     particleLightness: 60,
+    audioProfile: {
+      ambient: {
+        voices: [
+          {
+            type: 'sawtooth',
+            frequency: 96,
+            detune: -14,
+            sweepFrequency: 0.05,
+            sweepDepth: 160,
+            vibratoFrequency: 0.9,
+            vibratoDepth: 7.5,
+            filter: { type: 'lowpass', frequency: 620, q: 12 },
+            panDepth: 0.8,
+          },
+          {
+            type: 'sawtooth',
+            frequency: 162,
+            detune: 12,
+            sweepFrequency: 0.04,
+            sweepDepth: 180,
+            vibratoFrequency: 1.1,
+            vibratoDepth: 5.5,
+            filter: { type: 'lowpass', frequency: 580, q: 10 },
+            panDepth: 0.65,
+            panOffset: 0.35,
+          },
+          {
+            type: 'triangle',
+            frequency: 220,
+            detune: -6,
+            sweepFrequency: 0.06,
+            sweepDepth: 190,
+            vibratoFrequency: 0.7,
+            vibratoDepth: 8.5,
+            filter: { type: 'bandpass', frequency: 720, q: 8 },
+            panDepth: 0.7,
+            panOffset: -0.45,
+          },
+        ],
+        levels: { idle: 0.32, running: 0.9, gameover: 0.22 },
+      },
+      flap: {
+        type: 'triangle',
+        startFreq: 360,
+        peakFreq: 920,
+        endFreq: 210,
+        attack: 0.018,
+        maxGain: 0.48,
+        filterFrequency: 760,
+      },
+      score: {
+        shimmerGain: 0.28,
+        highMid: 1020,
+        highEnd: 1400,
+        highMidTime: 0.1,
+        highEndTime: 0.22,
+      },
+      gameover: {
+        startFreq: 520,
+        endFreq: 160,
+        filterStart: 1500,
+        filterEnd: 260,
+        noiseAmount: 0.42,
+      },
+    },
     particleHue(pulse, index) {
       return (pulse * 90 + index * 45) % 360;
     },
@@ -113,8 +180,90 @@ const THEMES = [
   },
   {
     id: 'cyber',
+    name: 'Cyber Rave',
     particleSaturation: 70,
     particleLightness: 55,
+    audioProfile: {
+      ambient: {
+        voices: [
+          {
+            type: 'square',
+            frequency: 128,
+            detune: -6,
+            sweepFrequency: 0.08,
+            sweepDepth: 120,
+            vibratoFrequency: 1.6,
+            vibratoDepth: 4.5,
+            filter: { type: 'bandpass', frequency: 880, q: 9 },
+            panDepth: 0.5,
+            panOffset: -0.4,
+          },
+          {
+            type: 'square',
+            frequency: 196,
+            detune: 8,
+            sweepFrequency: 0.06,
+            sweepDepth: 160,
+            vibratoFrequency: 1.2,
+            vibratoDepth: 5.5,
+            filter: { type: 'bandpass', frequency: 760, q: 8 },
+            panDepth: 0.6,
+            panOffset: 0.3,
+          },
+          {
+            type: 'sawtooth',
+            frequency: 288,
+            detune: 2,
+            sweepFrequency: 0.07,
+            sweepDepth: 140,
+            vibratoFrequency: 1.4,
+            vibratoDepth: 6.5,
+            filter: { type: 'highpass', frequency: 420, q: 7 },
+            panDepth: 0.45,
+          },
+        ],
+        levels: { idle: 0.28, running: 1, gameover: 0.24 },
+        transitionTime: 0.6,
+      },
+      flap: {
+        type: 'square',
+        startFreq: 420,
+        peakFreq: 980,
+        endFreq: 240,
+        filterType: 'highpass',
+        filterFrequency: 860,
+        filterQ: 11,
+        attack: 0.015,
+        maxGain: 0.42,
+        decay: 0.32,
+      },
+      score: {
+        highType: 'square',
+        lowType: 'square',
+        highStart: 720,
+        highMid: 1080,
+        highEnd: 1560,
+        highMidTime: 0.1,
+        highEndTime: 0.24,
+        lowStart: 320,
+        lowEnd: 560,
+        shimmerGain: 0.22,
+        delayTime: 0.16,
+        feedbackGain: 0.34,
+      },
+      gameover: {
+        type: 'square',
+        startFreq: 640,
+        endFreq: 220,
+        filterType: 'bandpass',
+        filterStart: 1800,
+        filterEnd: 380,
+        attack: 0.03,
+        maxGain: 0.5,
+        release: 1,
+        noiseAmount: 0.28,
+      },
+    },
     particleHue(pulse, index) {
       return (180 + Math.sin(pulse * 6 + index) * 90 + index * 15) % 360;
     },
@@ -258,8 +407,92 @@ const THEMES = [
   },
   {
     id: 'forest',
+    name: 'Forêt Luxuriante',
     particleSaturation: 70,
     particleLightness: 50,
+    audioProfile: {
+      ambient: {
+        voices: [
+          {
+            type: 'sine',
+            frequency: 86,
+            detune: -4,
+            sweepFrequency: 0.03,
+            sweepDepth: 110,
+            vibratoFrequency: 0.5,
+            vibratoDepth: 5.5,
+            filter: { type: 'lowpass', frequency: 520, q: 9 },
+            panDepth: 0.4,
+            panOffset: -0.35,
+          },
+          {
+            type: 'triangle',
+            frequency: 148,
+            detune: 6,
+            sweepFrequency: 0.028,
+            sweepDepth: 140,
+            vibratoFrequency: 0.7,
+            vibratoDepth: 6.5,
+            filter: { type: 'lowpass', frequency: 480, q: 8 },
+            panDepth: 0.45,
+            panOffset: 0.2,
+          },
+          {
+            type: 'sine',
+            frequency: 198,
+            detune: -10,
+            sweepFrequency: 0.025,
+            sweepDepth: 100,
+            vibratoFrequency: 0.55,
+            vibratoDepth: 5,
+            filter: { type: 'bandpass', frequency: 420, q: 6 },
+            panDepth: 0.35,
+            panOffset: 0.45,
+          },
+        ],
+        levels: { idle: 0.3, running: 0.75, gameover: 0.2 },
+        transitionTime: 1.2,
+      },
+      flap: {
+        type: 'sine',
+        startFreq: 280,
+        peakFreq: 520,
+        endFreq: 200,
+        filterType: 'bandpass',
+        filterFrequency: 540,
+        filterQ: 6,
+        attack: 0.025,
+        maxGain: 0.38,
+        decay: 0.45,
+      },
+      score: {
+        highType: 'sine',
+        highStart: 520,
+        highMid: 680,
+        highEnd: 880,
+        highMidTime: 0.14,
+        highEndTime: 0.3,
+        lowType: 'triangle',
+        lowStart: 260,
+        lowEnd: 340,
+        shimmerGain: 0.18,
+        delayTime: 0.28,
+        feedbackGain: 0.26,
+        release: 0.75,
+      },
+      gameover: {
+        type: 'triangle',
+        startFreq: 420,
+        endFreq: 120,
+        filterType: 'lowpass',
+        filterStart: 1100,
+        filterEnd: 200,
+        attack: 0.05,
+        maxGain: 0.48,
+        release: 1.2,
+        noiseAmount: 0.32,
+      },
+    },
     particleHue(pulse, index) {
       return (110 + Math.sin(pulse * 4 + index) * 30 + index * 8) % 360;
     },
@@ -395,8 +628,92 @@ const THEMES = [
   },
   {
     id: 'cosmic',
+    name: 'Dérive Cosmique',
     particleSaturation: 80,
     particleLightness: 70,
+    audioProfile: {
+      ambient: {
+        voices: [
+          {
+            type: 'sine',
+            frequency: 102,
+            detune: -12,
+            sweepFrequency: 0.018,
+            sweepDepth: 160,
+            vibratoFrequency: 0.35,
+            vibratoDepth: 9,
+            filter: { type: 'lowpass', frequency: 480, q: 14 },
+            panDepth: 0.55,
+            panOffset: -0.5,
+          },
+          {
+            type: 'triangle',
+            frequency: 182,
+            detune: 4,
+            sweepFrequency: 0.022,
+            sweepDepth: 150,
+            vibratoFrequency: 0.48,
+            vibratoDepth: 8,
+            filter: { type: 'bandpass', frequency: 520, q: 10 },
+            panDepth: 0.6,
+            panOffset: 0.5,
+          },
+          {
+            type: 'sawtooth',
+            frequency: 260,
+            detune: 14,
+            sweepFrequency: 0.03,
+            sweepDepth: 180,
+            vibratoFrequency: 0.42,
+            vibratoDepth: 10,
+            filter: { type: 'bandpass', frequency: 680, q: 12 },
+            panDepth: 0.7,
+          },
+        ],
+        levels: { idle: 0.34, running: 0.92, gameover: 0.24 },
+        transitionTime: 1.4,
+      },
+      flap: {
+        type: 'sine',
+        startFreq: 340,
+        peakFreq: 760,
+        endFreq: 180,
+        filterType: 'bandpass',
+        filterFrequency: 680,
+        filterQ: 7,
+        attack: 0.02,
+        maxGain: 0.4,
+        decay: 0.5,
+      },
+      score: {
+        highType: 'sine',
+        highStart: 600,
+        highMid: 900,
+        highEnd: 1320,
+        highMidTime: 0.16,
+        highEndTime: 0.32,
+        lowType: 'sine',
+        lowStart: 300,
+        lowEnd: 420,
+        shimmerGain: 0.24,
+        delayTime: 0.34,
+        feedbackGain: 0.22,
+        release: 0.75,
+      },
+      gameover: {
+        type: 'sine',
+        startFreq: 500,
+        endFreq: 90,
+        filterType: 'lowpass',
+        filterStart: 1300,
+        filterEnd: 180,
+        attack: 0.06,
+        maxGain: 0.5,
+        release: 1.4,
+        noiseAmount: 0.26,
+        noiseDecay: 0.7,
+      },
+    },
     particleHue(pulse, index) {
       return (260 + Math.sin(pulse * 5 + index) * 50 + index * 20) % 360;
     },
@@ -602,6 +919,7 @@ function getThemeHue(offset = 0) {
 
 scheduleNextTheme(true);
 updateTheme(0);
+syncThemeMetadata(true);
 
 const STATE_IDLE = 'idle';
 const STATE_RUNNING = 'running';
@@ -617,13 +935,154 @@ let score = 0;
 let bestScore = Number(localStorage.getItem('flappy-dopamine-best')) || 0;
 let pulse = 0;
 let messageTimeout = 0;
+let activeThemeId = null;
 
 const AudioContextClass = window.AudioContext || window.webkitAudioContext;
 const audio = {
   ctx: null,
   master: null,
   ambientGain: null,
+  ambientVoices: [],
+  profile: null,
+  profileId: 'default',
+  needsProfileRefresh: true,
 };
+
+const DEFAULT_AUDIO_PROFILE = {
+  ambient: {
+    voices: [
+      {
+        type: 'sawtooth',
+        frequency: 96,
+        detune: -14,
+        sweepFrequency: 0.05,
+        sweepDepth: 180,
+        vibratoFrequency: 0.9,
+        vibratoDepth: 7.2,
+        filter: { type: 'lowpass', frequency: 560, q: 12 },
+        panDepth: 0.75,
+      },
+      {
+        type: 'sawtooth',
+        frequency: 162,
+        detune: 9,
+        sweepFrequency: 0.035,
+        sweepDepth: 150,
+        vibratoFrequency: 1,
+        vibratoDepth: 5.5,
+        filter: { type: 'lowpass', frequency: 580, q: 11 },
+        panDepth: 0.7,
+      },
+      {
+        type: 'sawtooth',
+        frequency: 224,
+        detune: 16,
+        sweepFrequency: 0.045,
+        sweepDepth: 170,
+        vibratoFrequency: 0.95,
+        vibratoDepth: 8.4,
+        filter: { type: 'lowpass', frequency: 600, q: 12 },
+        panDepth: 0.7,
+      },
+    ],
+    filter: { type: 'lowpass', frequency: 560, q: 12 },
+    levels: { idle: 0.35, running: 0.85, gameover: 0.2 },
+    transitionTime: 0.9,
+  },
+  flap: {
+    type: 'triangle',
+    startFreq: 360,
+    peakFreq: 880,
+    endFreq: 220,
+    peakTime: 0.08,
+    endTime: 0.34,
+    filterType: 'bandpass',
+    filterFrequency: 720,
+    filterQ: 8,
+    attack: 0.02,
+    maxGain: 0.45,
+    decay: 0.4,
+  },
+  score: {
+    highType: 'sine',
+    lowType: 'triangle',
+    highStart: 640,
+    highMid: 960,
+    highEnd: 1280,
+    highMidTime: 0.12,
+    highEndTime: 0.22,
+    lowStart: 280,
+    lowEnd: 420,
+    lowEndTime: 0.18,
+    shimmerGain: 0.26,
+    delayTime: 0.24,
+    feedbackGain: 0.3,
+    attack: 0.02,
+    maxGain: 0.5,
+    release: 0.6,
+  },
+  gameover: {
+    type: 'sawtooth',
+    startFreq: 520,
+    endFreq: 140,
+    duration: 1.2,
+    filterType: 'lowpass',
+    filterStart: 1400,
+    filterEnd: 220,
+    attack: 0.04,
+    maxGain: 0.55,
+    release: 1.1,
+    noiseAmount: 0.4,
+    noiseDuration: 0.6,
+    noiseDecay: 0.5,
+  },
+};
+
+function cloneVoiceConfig(voice) {
+  if (!voice) {
+    return {};
+  }
+  const cloned = { ...voice };
+  if (voice.filter) {
+    cloned.filter = { ...voice.filter };
+  }
+  return cloned;
+}
+
+function getAudioProfile(theme) {
+  const overrides = theme && theme.audioProfile ? theme.audioProfile : {};
+  const ambientOverride = overrides.ambient || {};
+  const ambient = {
+    ...DEFAULT_AUDIO_PROFILE.ambient,
+    ...ambientOverride,
+  };
+  ambient.levels = {
+    ...DEFAULT_AUDIO_PROFILE.ambient.levels,
+    ...(ambientOverride.levels || {}),
+  };
+  ambient.filter = {
+    ...DEFAULT_AUDIO_PROFILE.ambient.filter,
+    ...(ambientOverride.filter || {}),
+  };
+  const voicesSource = ambientOverride.voices && ambientOverride.voices.length
+    ? ambientOverride.voices
+    : DEFAULT_AUDIO_PROFILE.ambient.voices;
+  ambient.voices = voicesSource.map((voice) => cloneVoiceConfig(voice));
+
+  return {
+    ambient,
+    flap: { ...DEFAULT_AUDIO_PROFILE.flap, ...(overrides.flap || {}) },
+    score: { ...DEFAULT_AUDIO_PROFILE.score, ...(overrides.score || {}) },
+    gameover: { ...DEFAULT_AUDIO_PROFILE.gameover, ...(overrides.gameover || {}) },
+  };
+}
+
+function getActiveAudioProfile() {
+  if (!audio.profile) {
+    audio.profile = getAudioProfile(getCurrentTheme());
+  }
+  return audio.profile || DEFAULT_AUDIO_PROFILE;
+}
 
 function ensureAudioContext() {
   if (!AudioContextClass) {
@@ -634,79 +1093,170 @@ function ensureAudioContext() {
     audio.master = audio.ctx.createGain();
     audio.master.gain.value = 0.3;
     audio.master.connect(audio.ctx.destination);
-    createAmbientPad();
-    updateAmbientState(true);
   } else if (audio.ctx.state === 'suspended') {
     audio.ctx.resume();
   }
-  updateAmbientState();
+
+  if (!audio.profile) {
+    audio.profile = getAudioProfile(getCurrentTheme());
+  }
+
+  if (!audio.ambientGain || audio.needsProfileRefresh) {
+    refreshAudioProfile(true);
+  } else {
+    updateAmbientState();
+  }
 }
 
-function createAmbientPad() {
-  if (!audio.ctx || audio.ambientGain) {
+function disposeAmbientPad() {
+  if (!audio.ctx) {
+    audio.ambientVoices = [];
     return;
   }
+  const now = audio.ctx.currentTime;
+  for (const voice of audio.ambientVoices) {
+    if (voice.voiceGain) {
+      voice.voiceGain.gain.setTargetAtTime(0.0001, now, 0.2);
+    }
+    if (voice.osc) {
+      voice.osc.stop(now + 0.35);
+    }
+    if (voice.sweepLfo) {
+      voice.sweepLfo.stop(now + 0.35);
+    }
+    if (voice.vibrato) {
+      voice.vibrato.stop(now + 0.35);
+    }
+    if (voice.panLfo) {
+      voice.panLfo.stop(now + 0.35);
+    }
+  }
+  audio.ambientVoices = [];
+}
+
+function createAmbientPad(ambientProfile) {
+  if (!audio.ctx || !audio.master) {
+    return;
+  }
+  if (!audio.ambientGain) {
+    audio.ambientGain = audio.ctx.createGain();
+    audio.ambientGain.gain.value = 0;
+    audio.ambientGain.connect(audio.master);
+  }
+
+  disposeAmbientPad();
+
   const ctx = audio.ctx;
-  const ambientGain = ctx.createGain();
-  ambientGain.gain.value = 0;
-  ambientGain.connect(audio.master);
-  audio.ambientGain = ambientGain;
+  const voices = ambientProfile.voices && ambientProfile.voices.length
+    ? ambientProfile.voices
+    : DEFAULT_AUDIO_PROFILE.ambient.voices;
+  const voiceCount = voices.length || 1;
 
-  const voices = [
-    { base: 96, detune: -14, sweep: 0.05, vibrato: 0.6 },
-    { base: 162, detune: 9, sweep: 0.035, vibrato: 0.4 },
-    { base: 224, detune: 16, sweep: 0.045, vibrato: 0.7 },
-  ];
+  audio.ambientVoices = [];
 
-  for (const voice of voices) {
+  voices.forEach((voiceConfig) => {
+    const config = cloneVoiceConfig(voiceConfig);
     const osc = ctx.createOscillator();
-    osc.type = 'sawtooth';
-    osc.frequency.value = voice.base;
-    osc.detune.value = voice.detune;
+    osc.type = config.type || ambientProfile.type || 'sawtooth';
+    const baseFrequency = config.frequency !== undefined ? config.frequency : config.base || 220;
+    osc.frequency.value = baseFrequency;
+    if (config.detune !== undefined) {
+      osc.detune.value = config.detune;
+    }
 
     const filter = ctx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.value = 560;
-    filter.Q.value = 12;
+    const filterConfig = config.filter || ambientProfile.filter || DEFAULT_AUDIO_PROFILE.ambient.filter;
+    filter.type = filterConfig.type || 'lowpass';
+    filter.frequency.value = filterConfig.frequency !== undefined ? filterConfig.frequency : 560;
+    filter.Q.value = filterConfig.q !== undefined ? filterConfig.q : 12;
 
-    const sweepLfo = ctx.createOscillator();
-    sweepLfo.frequency.value = voice.sweep;
-    const sweepDepth = ctx.createGain();
-    sweepDepth.gain.value = 180;
-    sweepLfo.connect(sweepDepth);
-    sweepDepth.connect(filter.frequency);
+    let sweepLfo = null;
+    const sweepFrequency = config.sweepFrequency !== undefined ? config.sweepFrequency : config.sweep;
+    if (sweepFrequency) {
+      sweepLfo = ctx.createOscillator();
+      sweepLfo.frequency.value = sweepFrequency;
+      const sweepDepth = ctx.createGain();
+      sweepDepth.gain.value = config.sweepDepth !== undefined ? config.sweepDepth : 160;
+      sweepLfo.connect(sweepDepth);
+      sweepDepth.connect(filter.frequency);
+      sweepLfo.start();
+    }
 
-    const vibrato = ctx.createOscillator();
-    vibrato.frequency.value = 0.8 + Math.random() * 0.6;
-    const vibratoDepth = ctx.createGain();
-    vibratoDepth.gain.value = voice.vibrato * 12;
-    vibrato.connect(vibratoDepth);
-    vibratoDepth.connect(osc.frequency);
+    let vibrato = null;
+    const vibratoFrequency = config.vibratoFrequency !== undefined ? config.vibratoFrequency : config.vibrato;
+    if (vibratoFrequency) {
+      vibrato = ctx.createOscillator();
+      const variance = config.vibratoVariance !== undefined ? config.vibratoVariance : 0.35;
+      vibrato.frequency.value = vibratoFrequency + (Math.random() - 0.5) * variance;
+      const vibratoDepth = ctx.createGain();
+      vibratoDepth.gain.value = config.vibratoDepth !== undefined ? config.vibratoDepth : 6;
+      vibrato.connect(vibratoDepth);
+      vibratoDepth.connect(osc.frequency);
+      vibrato.start();
+    }
 
     let output = filter;
+    let panLfo = null;
     if (ctx.createStereoPanner) {
       const panner = ctx.createStereoPanner();
-      panner.pan.value = -0.6 + Math.random() * 1.2;
+      const panOffset = config.panOffset !== undefined ? config.panOffset : -0.6 + Math.random() * 1.2;
+      panner.pan.value = panOffset;
       output.connect(panner);
       output = panner;
-      const panLfo = ctx.createOscillator();
-      panLfo.frequency.value = 0.02 + Math.random() * 0.03;
-      const panDepth = ctx.createGain();
-      panDepth.gain.value = 0.75;
-      panLfo.connect(panDepth);
-      panDepth.connect(panner.pan);
-      panLfo.start();
+
+      const panDepth = config.panDepth !== undefined ? config.panDepth : ambientProfile.panDepth ?? 0.75;
+      const panFrequency = config.panFrequency !== undefined
+        ? config.panFrequency
+        : ambientProfile.panFrequency ?? 0.03;
+      if (panDepth > 0 && panFrequency > 0) {
+        panLfo = ctx.createOscillator();
+        panLfo.frequency.value = panFrequency;
+        const panGain = ctx.createGain();
+        panGain.gain.value = panDepth;
+        panLfo.connect(panGain);
+        panGain.connect(panner.pan);
+        panLfo.start();
+      }
     }
 
     const voiceGain = ctx.createGain();
-    voiceGain.gain.value = 0.22 / voices.length;
+    const gainValue = config.gain !== undefined ? config.gain : ambientProfile.voiceGain ?? 0.24 / voiceCount;
+    voiceGain.gain.value = gainValue;
     output.connect(voiceGain);
-    voiceGain.connect(ambientGain);
+    voiceGain.connect(audio.ambientGain);
 
     osc.connect(filter);
     osc.start();
-    sweepLfo.start();
-    vibrato.start();
+
+    audio.ambientVoices.push({
+      osc,
+      filter,
+      voiceGain,
+      sweepLfo,
+      vibrato,
+      panLfo,
+    });
+  });
+}
+
+function refreshAudioProfile(immediate = false) {
+  if (!audio.ctx || !audio.master) {
+    return;
+  }
+  if (!audio.profile) {
+    audio.profile = getAudioProfile(getCurrentTheme());
+  }
+  createAmbientPad(audio.profile.ambient || DEFAULT_AUDIO_PROFILE.ambient);
+  audio.needsProfileRefresh = false;
+  updateAmbientState(immediate);
+}
+
+function setThemeAudio(theme, immediate = false) {
+  audio.profile = getAudioProfile(theme);
+  audio.profileId = theme && theme.id ? theme.id : 'default';
+  audio.needsProfileRefresh = true;
+  if (audio.ctx && audio.master) {
+    refreshAudioProfile(immediate);
   }
 }
 
@@ -715,17 +1265,22 @@ function updateAmbientState(immediate = false) {
     return;
   }
   const now = audio.ctx.currentTime;
-  let target = 0.35;
+  const profile = getActiveAudioProfile();
+  const levels = profile.ambient.levels || DEFAULT_AUDIO_PROFILE.ambient.levels;
+  const transition = profile.ambient.transitionTime ?? DEFAULT_AUDIO_PROFILE.ambient.transitionTime ?? 0.9;
+
+  let target = levels.idle ?? 0.35;
   if (state === STATE_RUNNING) {
-    target = 0.85;
+    target = levels.running ?? target;
   } else if (state === STATE_GAMEOVER) {
-    target = 0.2;
+    target = levels.gameover ?? target;
   }
+
   audio.ambientGain.gain.cancelScheduledValues(now);
   if (immediate) {
     audio.ambientGain.gain.setValueAtTime(target, now);
   } else {
-    audio.ambientGain.gain.setTargetAtTime(target, now, 0.9);
+    audio.ambientGain.gain.setTargetAtTime(target, now, transition);
   }
 }
 
@@ -735,28 +1290,40 @@ function playFlapSfx() {
   }
   const ctx = audio.ctx;
   const now = ctx.currentTime;
+  const settings = getActiveAudioProfile().flap || DEFAULT_AUDIO_PROFILE.flap;
+
   const osc = ctx.createOscillator();
-  osc.type = 'triangle';
-  osc.frequency.setValueAtTime(360, now);
-  osc.frequency.exponentialRampToValueAtTime(880, now + 0.08);
-  osc.frequency.exponentialRampToValueAtTime(220, now + 0.34);
+  osc.type = settings.type || 'triangle';
+  const startFreq = settings.startFreq || 360;
+  const peakFreq = settings.peakFreq || startFreq * 2.4;
+  const endFreq = settings.endFreq || startFreq / 1.6;
+  const peakTime = settings.peakTime ?? 0.08;
+  const endTime = settings.endTime ?? settings.decay ?? 0.4;
+
+  osc.frequency.setValueAtTime(startFreq, now);
+  osc.frequency.exponentialRampToValueAtTime(peakFreq, now + peakTime);
+  osc.frequency.exponentialRampToValueAtTime(endFreq, now + endTime);
 
   const filter = ctx.createBiquadFilter();
-  filter.type = 'bandpass';
-  filter.frequency.value = 720;
-  filter.Q.value = 8;
+  filter.type = settings.filterType || 'bandpass';
+  filter.frequency.value = settings.filterFrequency || 720;
+  filter.Q.value = settings.filterQ !== undefined ? settings.filterQ : 8;
 
   const gain = ctx.createGain();
-  gain.gain.setValueAtTime(0.0001, now);
-  gain.gain.linearRampToValueAtTime(0.45, now + 0.02);
-  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
+  const attack = settings.attack ?? 0.02;
+  const maxGain = settings.maxGain ?? 0.45;
+  const decay = settings.decay ?? 0.4;
+
+  gain.gain.setValueAtTime(settings.minGain ?? 0.0001, now);
+  gain.gain.linearRampToValueAtTime(maxGain, now + attack);
+  gain.gain.exponentialRampToValueAtTime(settings.endGain ?? 0.0001, now + decay);
 
   osc.connect(filter);
   filter.connect(gain);
   gain.connect(audio.master);
 
   osc.start(now);
-  osc.stop(now + 0.5);
+  osc.stop(now + Math.max(decay, 0.5));
 }
 
 function playScoreSfx() {
@@ -765,30 +1332,40 @@ function playScoreSfx() {
   }
   const ctx = audio.ctx;
   const now = ctx.currentTime;
+  const settings = getActiveAudioProfile().score || DEFAULT_AUDIO_PROFILE.score;
+
   const shimmer = ctx.createGain();
-  shimmer.gain.value = 0.26;
+  shimmer.gain.value = settings.shimmerGain ?? 0.26;
   shimmer.connect(audio.master);
 
   const highs = ctx.createOscillator();
-  highs.type = 'sine';
-  highs.frequency.setValueAtTime(640, now);
-  highs.frequency.linearRampToValueAtTime(960, now + 0.12);
-  highs.frequency.linearRampToValueAtTime(1280, now + 0.22);
+  highs.type = settings.highType || 'sine';
+  highs.frequency.setValueAtTime(settings.highStart || 640, now);
+  if (settings.highMid) {
+    highs.frequency.linearRampToValueAtTime(settings.highMid, now + (settings.highMidTime ?? 0.12));
+  }
+  if (settings.highEnd) {
+    highs.frequency.linearRampToValueAtTime(settings.highEnd, now + (settings.highEndTime ?? 0.22));
+  }
 
   const lows = ctx.createOscillator();
-  lows.type = 'triangle';
-  lows.frequency.setValueAtTime(280, now);
-  lows.frequency.linearRampToValueAtTime(420, now + 0.18);
+  lows.type = settings.lowType || 'triangle';
+  lows.frequency.setValueAtTime(settings.lowStart || 280, now);
+  lows.frequency.linearRampToValueAtTime(settings.lowEnd || 420, now + (settings.lowEndTime ?? 0.18));
 
   const gain = ctx.createGain();
-  gain.gain.setValueAtTime(0.0001, now);
-  gain.gain.linearRampToValueAtTime(0.5, now + 0.02);
-  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.6);
+  const attack = settings.attack ?? 0.02;
+  const maxGain = settings.maxGain ?? 0.5;
+  const release = settings.release ?? 0.6;
+
+  gain.gain.setValueAtTime(settings.minGain ?? 0.0001, now);
+  gain.gain.linearRampToValueAtTime(maxGain, now + attack);
+  gain.gain.exponentialRampToValueAtTime(settings.endGain ?? 0.0001, now + release);
 
   const delay = ctx.createDelay();
-  delay.delayTime.value = 0.24;
+  delay.delayTime.value = settings.delayTime ?? 0.24;
   const feedback = ctx.createGain();
-  feedback.gain.value = 0.3;
+  feedback.gain.value = settings.feedbackGain ?? 0.3;
   delay.connect(feedback);
   feedback.connect(delay);
 
@@ -798,10 +1375,11 @@ function playScoreSfx() {
   gain.connect(delay);
   delay.connect(shimmer);
 
+  const stopTime = now + Math.max(release, 0.5);
   highs.start(now);
-  highs.stop(now + 0.5);
+  highs.stop(stopTime);
   lows.start(now);
-  lows.stop(now + 0.5);
+  lows.stop(stopTime);
 }
 
 function playGameOverSfx() {
@@ -810,43 +1388,73 @@ function playGameOverSfx() {
   }
   const ctx = audio.ctx;
   const now = ctx.currentTime;
+  const settings = getActiveAudioProfile().gameover || DEFAULT_AUDIO_PROFILE.gameover;
+
   const osc = ctx.createOscillator();
-  osc.type = 'sawtooth';
-  osc.frequency.setValueAtTime(520, now);
-  osc.frequency.exponentialRampToValueAtTime(140, now + 0.9);
+  osc.type = settings.type || 'sawtooth';
+  const duration = settings.duration ?? Math.max(settings.release ?? 1.1, 1.1);
+  osc.frequency.setValueAtTime(settings.startFreq || 520, now);
+  osc.frequency.exponentialRampToValueAtTime(settings.endFreq || 140, now + duration);
 
   const filter = ctx.createBiquadFilter();
-  filter.type = 'lowpass';
-  filter.frequency.setValueAtTime(1400, now);
-  filter.frequency.exponentialRampToValueAtTime(220, now + 0.9);
+  filter.type = settings.filterType || 'lowpass';
+  filter.frequency.setValueAtTime(settings.filterStart || 1400, now);
+  filter.frequency.exponentialRampToValueAtTime(settings.filterEnd || 220, now + duration);
 
   const gain = ctx.createGain();
-  gain.gain.setValueAtTime(0.0001, now);
-  gain.gain.linearRampToValueAtTime(0.55, now + 0.04);
-  gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.1);
+  const attack = settings.attack ?? 0.04;
+  const maxGain = settings.maxGain ?? 0.55;
+  const release = settings.release ?? duration;
 
-  const noiseBuffer = ctx.createBuffer(1, ctx.sampleRate * 0.4, ctx.sampleRate);
-  const channel = noiseBuffer.getChannelData(0);
-  for (let i = 0; i < channel.length; i += 1) {
-    channel[i] = (Math.random() * 2 - 1) * (1 - i / channel.length);
-  }
-  const noise = ctx.createBufferSource();
-  noise.buffer = noiseBuffer;
-  const noiseGain = ctx.createGain();
-  noiseGain.gain.setValueAtTime(0.0001, now);
-  noiseGain.gain.linearRampToValueAtTime(0.4, now + 0.02);
-  noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
+  gain.gain.setValueAtTime(settings.minGain ?? 0.0001, now);
+  gain.gain.linearRampToValueAtTime(maxGain, now + attack);
+  gain.gain.exponentialRampToValueAtTime(settings.endGain ?? 0.0001, now + release);
 
   osc.connect(filter);
   filter.connect(gain);
   gain.connect(audio.master);
-  noise.connect(noiseGain);
-  noiseGain.connect(audio.master);
+
+  if (settings.noiseAmount) {
+    const noiseDuration = settings.noiseDuration ?? 0.6;
+    const noiseBuffer = ctx.createBuffer(1, Math.max(1, ctx.sampleRate * noiseDuration), ctx.sampleRate);
+    const channel = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < channel.length; i += 1) {
+      const fade = 1 - i / channel.length;
+      channel[i] = (Math.random() * 2 - 1) * fade;
+    }
+    const noise = ctx.createBufferSource();
+    noise.buffer = noiseBuffer;
+    const noiseGain = ctx.createGain();
+    noiseGain.gain.setValueAtTime(settings.minGain ?? 0.0001, now);
+    noiseGain.gain.linearRampToValueAtTime(settings.noiseAmount, now + 0.02);
+    const noiseDecay = settings.noiseDecay ?? 0.5;
+    noiseGain.gain.exponentialRampToValueAtTime(settings.endGain ?? 0.0001, now + noiseDecay);
+    noise.connect(noiseGain);
+    noiseGain.connect(audio.master);
+    noise.start(now);
+    noise.stop(now + noiseDuration);
+  }
 
   osc.start(now);
-  osc.stop(now + 1.2);
-  noise.start(now);
-  noise.stop(now + 0.6);
+  osc.stop(now + duration);
+}
+
+function updateThemeLabel(theme) {
+  if (!themeLabel) {
+    return;
+  }
+  const name = theme && (theme.name || theme.id) ? theme.name || theme.id : '';
+  themeLabel.textContent = name ? `Thème : ${name}` : '';
+}
+
+function syncThemeMetadata(force = false) {
+  const theme = getCurrentTheme();
+  const themeId = theme ? theme.id : 'default';
+  if (force || themeId !== activeThemeId) {
+    activeThemeId = themeId;
+    updateThemeLabel(theme);
+    setThemeAudio(theme, force);
+  }
 }
 
 const bird = {
@@ -904,6 +1512,7 @@ function resetGame() {
   spawnTimer = 0;
   pulse = 0;
   hideShareButton();
+  syncThemeMetadata(true);
 }
 
 function startGame() {
@@ -1025,6 +1634,7 @@ function spawnPipe() {
 }
 
 function update(delta) {
+  syncThemeMetadata();
   updateTheme(delta);
   pulse += delta;
   spawnTimer += delta;
