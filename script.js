@@ -7,6 +7,10 @@ const bestNode = document.getElementById('best');
 const wrapper = document.querySelector('.wrapper');
 const startMessage = document.getElementById('start-message');
 const themeLabel = document.getElementById('theme-label');
+const leaderboard = document.querySelector('.leaderboard');
+const leaderboardToggle = document.getElementById('leaderboard-toggle');
+const leaderboardPanel = document.getElementById('leaderboard-panel');
+const leaderboardList = document.getElementById('leaderboard-list');
 
 const DPR = window.devicePixelRatio || 1;
 let width = 640;
@@ -19,6 +23,12 @@ const PIPE_GAP = 220;
 const PIPE_WIDTH = 120;
 const PIPE_FREQUENCY = 1.6;
 const MAX_DROP_SPEED = 900;
+
+const LEADERBOARD_STORAGE_KEY = 'flappy-dopamine-leaderboard';
+const LEADERBOARD_SIZE = 5;
+
+let leaderboardEntries = [];
+let leaderboardToggledManually = false;
 
 const THEMES = [
   {
@@ -1022,6 +1032,7 @@ const dynamicTheme = {
 };
 
 let lastAppliedHue = null;
+let activeThemeId = null;
 
 function wrapHue(value) {
   return ((value % 360) + 360) % 360;
@@ -1080,7 +1091,6 @@ function getThemeHue(offset = 0) {
 
 scheduleNextTheme(true);
 updateTheme(0);
-syncThemeMetadata(true);
 
 const STATE_IDLE = 'idle';
 const STATE_RUNNING = 'running';
@@ -1096,7 +1106,6 @@ let score = 0;
 let bestScore = Number(localStorage.getItem('flappy-dopamine-best')) || 0;
 let pulse = 0;
 let messageTimeout = 0;
-let activeThemeId = null;
 
 const AudioContextClass = window.AudioContext || window.webkitAudioContext;
 const audio = {
@@ -1198,6 +1207,8 @@ const DEFAULT_AUDIO_PROFILE = {
     noiseDecay: 0.5,
   },
 };
+
+syncThemeMetadata(true);
 
 function cloneVoiceConfig(voice) {
   if (!voice) {
@@ -1600,13 +1611,149 @@ function playGameOverSfx() {
   osc.stop(now + duration);
 }
 
+function loadLeaderboardEntries() {
+  if (!window.localStorage) {
+    return [];
+  }
+  try {
+    const stored = localStorage.getItem(LEADERBOARD_STORAGE_KEY);
+    if (!stored) {
+      return [];
+    }
+    const parsed = JSON.parse(stored);
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+    return parsed
+      .filter((entry) => entry && Number.isFinite(Number(entry.score)))
+      .map((entry) => ({
+        score: Number(entry.score),
+        timestamp: Number(entry.timestamp) || Date.now(),
+      }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, LEADERBOARD_SIZE);
+  } catch (error) {
+    console.warn('Unable to load leaderboard data', error);
+    return [];
+  }
+}
+
+function saveLeaderboardEntries(entries) {
+  if (!window.localStorage) {
+    return;
+  }
+  try {
+    localStorage.setItem(LEADERBOARD_STORAGE_KEY, JSON.stringify(entries));
+  } catch (error) {
+    console.warn('Unable to save leaderboard data', error);
+  }
+}
+
+function formatLeaderboardDate(timestamp) {
+  const date = new Date(timestamp);
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+  return date.toLocaleDateString('fr-FR', {
+    month: 'short',
+    day: 'numeric',
+  });
+}
+
+function renderLeaderboard() {
+  if (!leaderboardList) {
+    return;
+  }
+  if (!leaderboardEntries.length) {
+    leaderboardList.innerHTML = '<li class="leaderboard-empty">Joue pour entrer dans le classement</li>';
+    return;
+  }
+
+  const fragment = document.createDocumentFragment();
+  leaderboardEntries.forEach((entry) => {
+    const item = document.createElement('li');
+    const scoreSpan = document.createElement('span');
+    scoreSpan.className = 'leaderboard-score';
+    scoreSpan.textContent = `${entry.score}`;
+    item.appendChild(scoreSpan);
+
+    const dateSpan = document.createElement('span');
+    dateSpan.className = 'leaderboard-date';
+    dateSpan.textContent = formatLeaderboardDate(entry.timestamp);
+    item.appendChild(dateSpan);
+
+    fragment.appendChild(item);
+  });
+  leaderboardList.innerHTML = '';
+  leaderboardList.appendChild(fragment);
+}
+
+function recordLeaderboardScore(value) {
+  if (!value || !Number.isFinite(value)) {
+    return;
+  }
+  const score = Math.max(0, Math.floor(value));
+  if (score <= 0) {
+    return;
+  }
+  const existingIndex = leaderboardEntries.findIndex((entry) => entry.score === score);
+  const entry = { score, timestamp: Date.now() };
+  if (existingIndex !== -1) {
+    leaderboardEntries.splice(existingIndex, 1, entry);
+  } else {
+    leaderboardEntries.push(entry);
+  }
+  leaderboardEntries.sort((a, b) => b.score - a.score);
+  leaderboardEntries = leaderboardEntries.slice(0, LEADERBOARD_SIZE);
+  saveLeaderboardEntries(leaderboardEntries);
+  renderLeaderboard();
+}
+
+function setLeaderboardCollapsed(collapsed, { manual = false } = {}) {
+  if (!leaderboard) {
+    return;
+  }
+  leaderboard.classList.toggle('collapsed', collapsed);
+  if (manual) {
+    leaderboardToggledManually = true;
+  }
+  const expanded = !leaderboard.classList.contains('collapsed');
+  const expandedValue = String(expanded);
+  leaderboard.setAttribute('aria-expanded', expandedValue);
+  if (leaderboardToggle) {
+    leaderboardToggle.setAttribute('aria-expanded', expandedValue);
+  }
+  if (leaderboardPanel) {
+    leaderboardPanel.hidden = !expanded;
+    leaderboardPanel.setAttribute('aria-hidden', String(!expanded));
+  }
+}
+
+const desktopLeaderboardMedia = window.matchMedia('(min-width: 1100px)');
+
+function syncLeaderboardForViewport({ force = false } = {}) {
+  if (!leaderboard) {
+    return;
+  }
+  if (desktopLeaderboardMedia.matches && (force || !leaderboardToggledManually)) {
+    setLeaderboardCollapsed(false, { manual: false });
+  } else if (!desktopLeaderboardMedia.matches && (force || !leaderboardToggledManually)) {
+    setLeaderboardCollapsed(true, { manual: false });
+  } else {
+    setLeaderboardCollapsed(leaderboard.classList.contains('collapsed'));
+  }
+}
+
+if (typeof desktopLeaderboardMedia.addEventListener === 'function') {
+  desktopLeaderboardMedia.addEventListener('change', () => syncLeaderboardForViewport());
+} else if (typeof desktopLeaderboardMedia.addListener === 'function') {
+  desktopLeaderboardMedia.addListener(() => syncLeaderboardForViewport());
+}
+
 function updateThemeLabel(theme) {
   if (!themeLabel) {
     return;
   }
-  const name = theme && (theme.name || theme.id) ? theme.name || theme.id : '';
-  themeLabel.textContent = name ? `Thème : ${name}` : '';
-}
 
 function syncThemeMetadata(force = false) {
   const theme = getCurrentTheme();
@@ -1627,6 +1774,18 @@ const bird = {
 const pipes = [];
 const particles = [];
 const textFragments = [];
+
+leaderboardEntries = loadLeaderboardEntries();
+renderLeaderboard();
+setLeaderboardCollapsed(leaderboard ? leaderboard.classList.contains('collapsed') : true);
+syncLeaderboardForViewport({ force: true });
+
+if (leaderboardToggle && leaderboard) {
+  leaderboardToggle.addEventListener('click', () => {
+    const currentlyCollapsed = leaderboard.classList.contains('collapsed');
+    setLeaderboardCollapsed(!currentlyCollapsed, { manual: true });
+  });
+}
 
 bestNode.textContent = bestScore;
 
@@ -1706,6 +1865,7 @@ function endGame() {
     bestNode.textContent = bestScore;
     localStorage.setItem('flappy-dopamine-best', bestScore);
   }
+  recordLeaderboardScore(score);
   showShareButton();
   updateAmbientState();
 }
@@ -2217,8 +2377,13 @@ document.addEventListener('keydown', (event) => {
   }
 });
 
-canvas.addEventListener('pointerdown', handlePress);
-canvas.addEventListener('touchstart', handlePress, { passive: false });
+if (window.PointerEvent) {
+  canvas.style.touchAction = 'none';
+  canvas.addEventListener('pointerdown', handlePress);
+} else {
+  canvas.addEventListener('mousedown', handlePress);
+  canvas.addEventListener('touchstart', handlePress, { passive: false });
+}
 startBtn.addEventListener('click', handlePress);
 
 shareBtn.addEventListener('click', () => {

@@ -8,6 +8,22 @@
   </head>
   <body>
     <main class="wrapper">
+      <aside class="leaderboard collapsed" aria-expanded="false">
+        <button
+          id="leaderboard-toggle"
+          class="leaderboard-toggle"
+          type="button"
+          aria-controls="leaderboard-panel"
+          aria-expanded="false"
+        >
+          Scores
+        </button>
+        <div id="leaderboard-panel" class="leaderboard-panel" role="region" aria-live="polite">
+          <h2>Hall of Fame</h2>
+          <p class="leaderboard-note">Insert coin to beat the neon high-score.</p>
+          <ol id="leaderboard-list" class="leaderboard-list"></ol>
+        </div>
+      </aside>
       <div class="game-area">
         <canvas id="game"></canvas>
         <div id="theme-label" class="theme-label" aria-live="polite"></div>
