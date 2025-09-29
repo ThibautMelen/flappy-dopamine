@@ -851,6 +851,200 @@ const THEMES: Theme[] = [
     },
   },
   {
+    id: 'hyperdrive',
+    label: 'Hyperdrive Rebel',
+    emoji: '🚀',
+    accentColor: '#7dd9ff',
+    particleHue(pulse, index) {
+      return (210 + index * 24 + pulse * 140) % 360;
+    },
+    drawBackground(ctx, pulse, w, h) {
+      ctx.save();
+      const gradient = ctx.createLinearGradient(0, 0, 0, h);
+      gradient.addColorStop(0, '#020417');
+      gradient.addColorStop(0.45, '#040a2f');
+      gradient.addColorStop(1, '#081a4d');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, w, h);
+
+      const starCount = 120;
+      for (let i = 0; i < starCount; i += 1) {
+        const travel = (pulse * 480 + i * 18) % (h + 200);
+        const x = (i * 73 + Math.sin(pulse * 3 + i) * 40) % (w + 200) - 100;
+        const length = 6 + Math.sin(pulse * 12 + i) * 3;
+        ctx.fillStyle = `hsla(${(200 + i * 5) % 360}, 85%, 75%, ${0.18 + (i % 6) * 0.08})`;
+        ctx.fillRect(x, travel - length, 2, length);
+      }
+
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.strokeStyle = 'rgba(125, 217, 255, 0.18)';
+      ctx.lineWidth = 2;
+      for (let i = 0; i < 12; i += 1) {
+        const y = (pulse * 160 + i * (h / 12)) % h;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y - 30);
+        ctx.stroke();
+      }
+      ctx.globalCompositeOperation = 'source-over';
+
+      ctx.restore();
+    },
+    drawPipe(ctx, pipe, h, pulse, pipeWidth) {
+      ctx.save();
+      const baseHue = (205 + pipe.seed * 120 + pulse * 40) % 360;
+      const body = ctx.createLinearGradient(pipe.x, 0, pipe.x + pipeWidth, 0);
+      body.addColorStop(0, `hsla(${baseHue}, 85%, 20%, 0.95)`);
+      body.addColorStop(0.5, `hsla(${(baseHue + 40) % 360}, 85%, 32%, 0.95)`);
+      body.addColorStop(1, `hsla(${baseHue}, 85%, 18%, 0.95)`);
+      ctx.fillStyle = body;
+      ctx.fillRect(pipe.x, 0, pipeWidth, pipe.top);
+      ctx.fillRect(pipe.x, pipe.bottom, pipeWidth, h - pipe.bottom);
+
+      ctx.strokeStyle = `hsla(${baseHue}, 90%, 70%, 0.55)`;
+      ctx.lineWidth = 4;
+      ctx.strokeRect(pipe.x + 3, 0, pipeWidth - 6, pipe.top);
+      ctx.strokeRect(pipe.x + 3, pipe.bottom, pipeWidth - 6, h - pipe.bottom);
+
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = `hsla(${(baseHue + 120) % 360}, 90%, 60%, 0.35)`;
+      for (let y = 20; y < pipe.top - 10; y += 34) {
+        ctx.beginPath();
+        ctx.moveTo(pipe.x + 8, y);
+        ctx.lineTo(pipe.x + pipeWidth - 8, y - 8);
+        ctx.stroke();
+      }
+      for (let y = pipe.bottom + 16; y < h - 10; y += 34) {
+        ctx.beginPath();
+        ctx.moveTo(pipe.x + 8, y);
+        ctx.lineTo(pipe.x + pipeWidth - 8, y - 8);
+        ctx.stroke();
+      }
+
+      ctx.restore();
+    },
+    drawBird(ctx, pulse, radius) {
+      ctx.save();
+      const scale = radius / 24;
+      ctx.scale(scale, scale);
+
+      const wingOffset = Math.sin(pulse * 12) * 10;
+      ctx.fillStyle = 'rgba(8, 28, 72, 0.92)';
+      ctx.beginPath();
+      ctx.moveTo(-34, 0);
+      ctx.quadraticCurveTo(-8, -10 - wingOffset, 20, -6);
+      ctx.quadraticCurveTo(-8, 6 + wingOffset, -34, 0);
+      ctx.fill();
+
+      const hullGradient = ctx.createLinearGradient(-18, -10, 28, 12);
+      hullGradient.addColorStop(0, 'rgba(11, 48, 110, 0.95)');
+      hullGradient.addColorStop(1, 'rgba(125, 217, 255, 0.95)');
+      ctx.fillStyle = hullGradient;
+      ctx.beginPath();
+      ctx.moveTo(-12, -12);
+      ctx.lineTo(24, -2);
+      ctx.lineTo(24, 2);
+      ctx.lineTo(-12, 12);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+      ctx.beginPath();
+      ctx.arc(10, -2, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = 'rgba(13, 16, 26, 0.9)';
+      ctx.beginPath();
+      ctx.arc(11, -2, 2, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = 'rgba(125, 217, 255, 0.8)';
+      ctx.beginPath();
+      ctx.moveTo(24, -4);
+      ctx.lineTo(36, 0);
+      ctx.lineTo(24, 4);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    },
+    audioProfile: {
+      ambient: {
+        voices: [
+          {
+            type: 'sawtooth',
+            frequency: 140,
+            detune: -18,
+            sweepFrequency: 0.06,
+            sweepDepth: 220,
+            vibratoFrequency: 1.4,
+            vibratoDepth: 9,
+            filter: { type: 'bandpass', frequency: 820, q: 9 },
+            panDepth: 0.75,
+          },
+          {
+            type: 'square',
+            frequency: 190,
+            detune: 16,
+            sweepFrequency: 0.05,
+            sweepDepth: 240,
+            vibratoFrequency: 0.8,
+            vibratoDepth: 6,
+            filter: { type: 'lowpass', frequency: 680, q: 11 },
+            panDepth: 0.55,
+            panOffset: -0.3,
+          },
+          {
+            type: 'triangle',
+            frequency: 90,
+            detune: -8,
+            sweepFrequency: 0.07,
+            sweepDepth: 200,
+            vibratoFrequency: 1.1,
+            vibratoDepth: 7,
+            filter: { type: 'highpass', frequency: 320, q: 8 },
+            panDepth: 0.6,
+            panOffset: 0.4,
+          },
+        ],
+        levels: { idle: 0.28, running: 0.85, gameover: 0.24 },
+        transitionTime: 0.9,
+      },
+      flap: {
+        type: 'square',
+        startFreq: 420,
+        peakFreq: 980,
+        endFreq: 240,
+        attack: 0.016,
+        maxGain: 0.42,
+        filterType: 'bandpass',
+        filterFrequency: 880,
+        filterQ: 10,
+      },
+      score: {
+        highType: 'triangle',
+        highStart: 720,
+        highMid: 960,
+        highEnd: 1240,
+        highMidTime: 0.08,
+        highEndTime: 0.22,
+        shimmerGain: 0.26,
+        delayTime: 0.18,
+        feedbackGain: 0.34,
+      },
+      gameover: {
+        type: 'sawtooth',
+        startFreq: 600,
+        endFreq: 160,
+        filterType: 'lowpass',
+        filterStart: 1500,
+        filterEnd: 220,
+        attack: 0.04,
+        maxGain: 0.38,
+        noiseAmount: 0.4,
+      },
+    },
+  },
+  {
     id: 'dino',
     label: 'Crête Jurassique',
     emoji: '🦕',
@@ -2914,6 +3108,225 @@ const THEMES: Theme[] = [
       },
     },
   },
+  {
+    id: 'unicorn',
+    label: 'Licorne Prismatique',
+    emoji: '🦄',
+    accentColor: '#ffe1ff',
+    particleHue(pulse, index) {
+      return (300 + Math.sin(pulse * 3 + index) * 60 + index * 20) % 360;
+    },
+    drawBackground(ctx, pulse, w, h) {
+      ctx.save();
+      const gradient = ctx.createLinearGradient(0, 0, 0, h);
+      gradient.addColorStop(0, '#3a0b54');
+      gradient.addColorStop(0.45, '#6d3c9c');
+      gradient.addColorStop(1, '#ffe1ff');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+      for (let i = 0; i < 6; i += 1) {
+        const cloudX = (i * w) / 4 + Math.sin(pulse * 0.8 + i) * 80;
+        const cloudY = h * 0.25 + Math.sin(pulse * 1.4 + i) * 18;
+        ctx.beginPath();
+        ctx.ellipse(cloudX, cloudY, 120, 40, 0, 0, Math.PI * 2);
+        ctx.ellipse(cloudX - 70, cloudY + 10, 90, 30, 0, 0, Math.PI * 2);
+        ctx.ellipse(cloudX + 70, cloudY + 10, 90, 30, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.strokeStyle = 'rgba(255, 180, 255, 0.28)';
+      ctx.lineWidth = 10;
+      ctx.beginPath();
+      ctx.moveTo(-40, h * 0.62);
+      for (let x = -40; x <= w + 40; x += 40) {
+        const y = h * 0.62 + Math.sin(pulse * 2 + x * 0.05) * 20;
+        ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      ctx.globalCompositeOperation = 'lighter';
+      for (let i = 0; i < 30; i += 1) {
+        const sparkleX = (pulse * 120 + i * 80) % (w + 60) - 30;
+        const sparkleY = (pulse * 80 + i * 50) % h;
+        ctx.fillStyle = `hsla(${(280 + i * 8) % 360}, 100%, 80%, 0.55)`;
+        ctx.beginPath();
+        ctx.arc(sparkleX, sparkleY, 3 + (i % 3), 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalCompositeOperation = 'source-over';
+
+      ctx.restore();
+    },
+    drawPipe(ctx, pipe, h, pulse, pipeWidth) {
+      ctx.save();
+      const body = ctx.createLinearGradient(pipe.x, 0, pipe.x + pipeWidth, 0);
+      body.addColorStop(0, 'rgba(255, 210, 255, 0.9)');
+      body.addColorStop(1, 'rgba(210, 160, 255, 0.9)');
+      ctx.fillStyle = body;
+      ctx.fillRect(pipe.x, 0, pipeWidth, pipe.top);
+      ctx.fillRect(pipe.x, pipe.bottom, pipeWidth, h - pipe.bottom);
+
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(pipe.x + 3, 0, pipeWidth - 6, pipe.top);
+      ctx.strokeRect(pipe.x + 3, pipe.bottom, pipeWidth - 6, h - pipe.bottom);
+
+      ctx.strokeStyle = 'rgba(255, 160, 220, 0.35)';
+      ctx.lineWidth = 2;
+      const swirlAmplitude = 12 + Math.sin(pulse * 4 + pipe.seed * Math.PI * 2) * 4;
+      for (let y = 16; y < pipe.top - 12; y += 26) {
+        ctx.beginPath();
+        ctx.moveTo(pipe.x + 8, y);
+        ctx.quadraticCurveTo(pipe.x + pipeWidth / 2 + swirlAmplitude, y + 8, pipe.x + pipeWidth - 8, y + 2);
+        ctx.stroke();
+      }
+      for (let y = pipe.bottom + 10; y < h - 16; y += 26) {
+        ctx.beginPath();
+        ctx.moveTo(pipe.x + 8, y);
+        ctx.quadraticCurveTo(pipe.x + pipeWidth / 2 - swirlAmplitude, y + 8, pipe.x + pipeWidth - 8, y + 2);
+        ctx.stroke();
+      }
+
+      ctx.restore();
+    },
+    drawBird(ctx, pulse, radius) {
+      ctx.save();
+      const scale = radius / 24;
+      ctx.scale(scale, scale);
+      const flutter = Math.sin(pulse * 11) * 14;
+
+      ctx.fillStyle = 'rgba(255, 230, 255, 0.92)';
+      ctx.beginPath();
+      ctx.moveTo(-24, -6);
+      ctx.quadraticCurveTo(-52, flutter - 8, -8, 12);
+      ctx.quadraticCurveTo(-38, flutter + 8, -24, -6);
+      ctx.fill();
+
+      const body = ctx.createLinearGradient(-12, -18, 24, 20);
+      body.addColorStop(0, 'rgba(255, 215, 255, 0.95)');
+      body.addColorStop(1, 'rgba(180, 155, 255, 0.95)');
+      ctx.fillStyle = body;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 26, 20, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+      ctx.beginPath();
+      ctx.arc(12, -4, 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(70, 30, 90, 0.9)';
+      ctx.beginPath();
+      ctx.arc(14.2, -4.2, 2.8, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = 'rgba(255, 210, 120, 0.95)';
+      ctx.beginPath();
+      ctx.moveTo(-6, -22);
+      ctx.lineTo(-2, -40);
+      ctx.lineTo(2, -22);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.strokeStyle = 'rgba(255, 160, 220, 0.7)';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(20, 6);
+      ctx.quadraticCurveTo(34, 18, 20, 32);
+      ctx.stroke();
+
+      ctx.fillStyle = 'rgba(255, 190, 200, 0.92)';
+      ctx.beginPath();
+      ctx.moveTo(26, -2);
+      ctx.lineTo(36, 0);
+      ctx.lineTo(26, 2);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    },
+    audioProfile: {
+      ambient: {
+        voices: [
+          {
+            type: 'sine',
+            frequency: 120,
+            detune: -8,
+            sweepFrequency: 0.04,
+            sweepDepth: 110,
+            vibratoFrequency: 0.8,
+            vibratoDepth: 6,
+            filter: { type: 'lowpass', frequency: 520, q: 8 },
+            panDepth: 0.5,
+            panOffset: -0.3,
+          },
+          {
+            type: 'triangle',
+            frequency: 180,
+            detune: 10,
+            sweepFrequency: 0.05,
+            sweepDepth: 140,
+            vibratoFrequency: 0.95,
+            vibratoDepth: 7,
+            filter: { type: 'bandpass', frequency: 720, q: 7 },
+            panDepth: 0.65,
+            panOffset: 0.2,
+          },
+          {
+            type: 'sine',
+            frequency: 260,
+            detune: -4,
+            sweepFrequency: 0.06,
+            sweepDepth: 130,
+            vibratoFrequency: 1.2,
+            vibratoDepth: 6.5,
+            filter: { type: 'highpass', frequency: 310, q: 6 },
+            panDepth: 0.55,
+          },
+        ],
+        levels: { idle: 0.34, running: 0.88, gameover: 0.26 },
+        transitionTime: 1.1,
+      },
+      flap: {
+        type: 'triangle',
+        startFreq: 340,
+        peakFreq: 760,
+        endFreq: 220,
+        filterType: 'bandpass',
+        filterFrequency: 660,
+        filterQ: 9,
+        attack: 0.018,
+        maxGain: 0.4,
+        decay: 0.32,
+      },
+      score: {
+        highType: 'sine',
+        highStart: 620,
+        highMid: 820,
+        highEnd: 1040,
+        highMidTime: 0.1,
+        highEndTime: 0.24,
+        lowType: 'triangle',
+        lowStart: 320,
+        lowEnd: 440,
+        shimmerGain: 0.28,
+        delayTime: 0.2,
+        feedbackGain: 0.32,
+      },
+      gameover: {
+        type: 'triangle',
+        startFreq: 520,
+        endFreq: 160,
+        filterType: 'lowpass',
+        filterStart: 1400,
+        filterEnd: 260,
+        attack: 0.03,
+        maxGain: 0.42,
+        release: 0.9,
+        noiseAmount: 0.2,
+      },
+    },
+  },
 ];
 
 const THEME_SEQUENCE = THEMES.map((theme) => theme.id);
@@ -3785,10 +4198,12 @@ export default function GameShell() {
       historyBodyEl.innerHTML = '';
       if (historyEntries.length === 0) {
         const emptyRow = document.createElement('tr');
+        emptyRow.classList.add('history-empty-row');
         const emptyCell = document.createElement('td');
         emptyCell.colSpan = 4;
         emptyCell.className = 'history-empty';
         emptyCell.textContent = 'Joue une partie pour remplir le tableau.';
+        emptyCell.dataset.label = 'Info';
         emptyRow.appendChild(emptyCell);
         historyBodyEl.appendChild(emptyRow);
         return;
@@ -3802,15 +4217,19 @@ export default function GameShell() {
 
         const rankCell = document.createElement('td');
         rankCell.textContent = String(index + 1);
+        rankCell.dataset.label = '#';
 
         const nameCell = document.createElement('td');
         nameCell.textContent = entry.name;
+        nameCell.dataset.label = 'Joueur';
 
         const scoreCell = document.createElement('td');
         scoreCell.textContent = String(entry.score);
+        scoreCell.dataset.label = 'Score';
 
         const timeCell = document.createElement('td');
         timeCell.textContent = formatTime(entry.playedAt);
+        timeCell.dataset.label = 'Heure';
 
         row.appendChild(rankCell);
         row.appendChild(nameCell);
@@ -3986,23 +4405,72 @@ export default function GameShell() {
   }, []);
 
   return (
-    <div className="app-shell">
-      <header className="top-bar">
-        <div className="title-block">
+    <div className="game-app">
+      <header className="app-header">
+        <div className="app-brand">
           <h1>Flappy Dopamine</h1>
-          <p className="baseline">Vol hypnotique, vibes neon.</p>
+          <p className="app-subtitle">Vol hypnotique, vibes neon.</p>
         </div>
-        <div ref={playerNameRef} className="player-badge" aria-live="polite">
-          Flappy Boys
+        <div className="header-actions">
+          <div ref={playerNameRef} className="player-badge" aria-live="polite">
+            Flappy Boys
+          </div>
+          <div ref={themeLabelRef} className="theme-chip">⚡ Néon Pulse</div>
         </div>
-        <div ref={themeLabelRef} className="theme-chip">⚡ Néon Pulse</div>
       </header>
 
-      <main className="layout" aria-label="Jeu Flappy Dopamine">
-        <aside className="side-panel">
-          <section className="score-stack">
-            <h2>Scoreboard</h2>
-            <div className="score-grid" role="status" aria-live="polite">
+      <main className="app-main" aria-label="Jeu Flappy Dopamine">
+        <section className="game-panel">
+          <div className="game-frame" aria-label="Zone de jeu">
+            <canvas
+              ref={canvasRef}
+              className="game-canvas"
+              role="img"
+              aria-label="Jeu Flappy Dopamine"
+            />
+            <div ref={overlayRef} className="overlay overlay--visible" aria-live="polite">
+              <div className="overlay-card">
+                <h2 ref={overlayTitleRef}>Ready to vibe?</h2>
+                <p ref={overlayMessageRef}>Clique Play ou tape l&apos;écran pour décoller.</p>
+                <div ref={nameFieldRef} className="overlay-name">
+                  <label className="overlay-label" htmlFor="player-name">
+                    Ton prénom
+                  </label>
+                  <input
+                    ref={nameInputRef}
+                    id="player-name"
+                    className="overlay-input"
+                    type="text"
+                    name="player-name"
+                    placeholder="Flappy Boys"
+                    autoComplete="nickname"
+                    maxLength={24}
+                    inputMode="text"
+                    aria-label="Ton prénom"
+                  />
+                </div>
+                <button ref={playButtonRef} className="primary-btn" type="button">
+                  Play
+                </button>
+              </div>
+            </div>
+            <button
+              ref={muteButtonRef}
+              className="audio-toggle"
+              type="button"
+              aria-label="Couper le son"
+              aria-pressed="false"
+            >
+              🔊
+            </button>
+            <div ref={toastRef} className="toast" role="status" aria-live="polite" />
+          </div>
+        </section>
+
+        <aside className="stats-panel">
+          <section>
+            <h2 className="section-title">Scoreboard</h2>
+            <div className="score-cards" role="status" aria-live="polite">
               <div className="score-card">
                 <span className="label">Score</span>
                 <span className="value" id="score-value">
@@ -4019,7 +4487,7 @@ export default function GameShell() {
           </section>
 
           <section>
-            <h2>Commands</h2>
+            <h2 className="section-title">Commands</h2>
             <ul className="controls-list">
               <li>
                 <span className="key">Space</span> flap
@@ -4032,17 +4500,20 @@ export default function GameShell() {
               </li>
             </ul>
           </section>
+
           <section>
-            <h2>Conseils</h2>
+            <h2 className="section-title">Conseils</h2>
             <p>Reste dans le flux neon, garde le rythme, et anticipe le boost toutes les cinq portes.</p>
           </section>
+
           <section className="actions">
             <button ref={shareButtonRef} className="ghost-btn" type="button">
               Tweeter mon score
             </button>
           </section>
+
           <section className="history">
-            <h2>Hall Neon</h2>
+            <h2 className="section-title">Hall Neon</h2>
             <table className="score-history">
               <thead>
                 <tr>
@@ -4053,8 +4524,8 @@ export default function GameShell() {
                 </tr>
               </thead>
               <tbody ref={historyBodyRef}>
-                <tr>
-                  <td className="history-empty" colSpan={4}>
+                <tr className="history-empty-row">
+                  <td className="history-empty" colSpan={4} data-label="Info">
                     Joue une partie pour remplir le tableau.
                   </td>
                 </tr>
@@ -4062,51 +4533,6 @@ export default function GameShell() {
             </table>
           </section>
         </aside>
-
-        <section className="canvas-shell" aria-label="Zone de jeu">
-          <canvas
-            ref={canvasRef}
-            className="game-canvas"
-            role="img"
-            aria-label="Jeu Flappy Dopamine"
-          />
-          <div ref={overlayRef} className="overlay overlay--visible" aria-live="polite">
-            <div className="overlay-card">
-              <h2 ref={overlayTitleRef}>Ready to vibe?</h2>
-              <p ref={overlayMessageRef}>Clique Play ou tape l&apos;écran pour décoller.</p>
-              <div ref={nameFieldRef} className="overlay-name">
-                <label className="overlay-label" htmlFor="player-name">
-                  Ton prénom
-                </label>
-                <input
-                  ref={nameInputRef}
-                  id="player-name"
-                  className="overlay-input"
-                  type="text"
-                  name="player-name"
-                  placeholder="Flappy Boys"
-                  autoComplete="nickname"
-                  maxLength={24}
-                  inputMode="text"
-                  aria-label="Ton prénom"
-                />
-              </div>
-              <button ref={playButtonRef} className="primary-btn" type="button">
-                Play
-              </button>
-            </div>
-          </div>
-          <button
-            ref={muteButtonRef}
-            className="audio-toggle"
-            type="button"
-            aria-label="Couper le son"
-            aria-pressed="false"
-          >
-            🔊
-          </button>
-          <div ref={toastRef} className="toast" role="status" aria-live="polite" />
-        </section>
       </main>
     </div>
   );
